@@ -7,7 +7,6 @@
     <!-- 引入 Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* 自定義奶茶色與灰藍色微調背景 */
         body {
             background-color: #FBF9F5; /* 溫潤柔和的淺奶茶色背景 */
             color: #4A453F;
@@ -34,16 +33,16 @@
             <div>
                 <h1 class="text-2xl font-bold tracking-wide" style="color: #6A5E53;">🫜 adorable 蘿蔔庫存表</h1>
             </div>
-            <div class="flex gap-2">
+            <div class="flex flex-wrap gap-2">
                 <button onclick="switchTab('order')" id="btn-order" class="px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition" style="background-color: #5D728A;">訂貨與檔口管理</button>
                 <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">庫存管理</button>
                 <button onclick="switchTab('shipping')" id="btn-shipping" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國出貨清單</button>
+                <button onclick="switchTab('parcels')" id="btn-parcels" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">寄出包裹記錄</button>
             </div>
         </header>
 
         <!-- 頁籤 1：訂貨與檔口管理 -->
         <section id="tab-order" class="space-y-6">
-            <!-- 新增表單 -->
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">➕ 新增訂單 / 商品記錄</h2>
                 <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-9 gap-3">
@@ -90,7 +89,6 @@
                 </form>
             </div>
 
-            <!-- 列表與篩選 -->
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center flex-wrap gap-4">
                     <div class="flex items-center gap-3">
@@ -132,7 +130,6 @@
                         </tbody>
                     </table>
                 </div>
-                <!-- 總計列 -->
                 <div class="p-4 bg-[#FBF9F5] border-t border-[#EFECE6] flex justify-end items-center gap-6 text-sm">
                     <span class="font-medium text-slate-600">目前清單總花費：</span>
                     <span id="totalCostSum" class="text-lg font-bold" style="color: #5D728A;">0</span>
@@ -219,44 +216,95 @@
                 </div>
             </div>
         </section>
+
+        <!-- 頁籤 4：寄出包裹記錄 -->
+        <section id="tab-parcels" class="hidden space-y-6">
+            <div class="milk-card p-4 rounded-xl shadow-sm border">
+                <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增寄回台灣包裹記錄</h2>
+                <form id="parcelForm" onsubmit="addParcel(event)" class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">寄出日期</label>
+                        <input type="date" id="parcelDate" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">包裹重量 (公斤 / KG)</label>
+                        <input type="number" step="0.1" id="parcelKg" placeholder="例如：5.5" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">包含出貨名單 / 內容物摘要</label>
+                        <input type="text" id="parcelItems" placeholder="例如：毛衣白F x2, 喇叭褲黑S x1 (或從下方勾選)" class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div class="sm:col-span-3 lg:col-span-4 flex justify-end">
+                        <button type="submit" class="text-white font-medium py-2 px-6 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增包裹記錄</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
+                <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">🛩️ 已寄出包裹清單與總公斤數</h2>
+                    <span id="totalParcelKg" class="text-xs bg-[#EAF0F6] text-[#5D728A] px-2.5 py-1 rounded-full font-medium">總計 0.0 KG</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#F9F7F2] text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-3">日期</th>
+                                <th class="p-3">包裹重量 (KG)</th>
+                                <th class="p-3">包含出貨名單 / 內容</th>
+                                <th class="p-3 text-right">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="parcelTableBody" class="divide-y divide-[#EFECE6] text-sm">
+                            <!-- 動態插入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
     </div>
 
     <!-- JavaScript 邏輯 -->
     <script>
         let orders = JSON.parse(localStorage.getItem('shop_orders')) || [];
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
+        let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
 
         document.getElementById('orderDate').valueAsDate = new Date();
+        document.getElementById('parcelDate').valueAsDate = new Date();
 
         function switchTab(tabName) {
             document.getElementById('tab-order').classList.add('hidden');
             document.getElementById('tab-inventory').classList.add('hidden');
             document.getElementById('tab-shipping').classList.add('hidden');
+            document.getElementById('tab-parcels').classList.add('hidden');
 
-            document.getElementById('btn-order').className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
-            document.getElementById('btn-inventory').className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
-            document.getElementById('btn-shipping').className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
+            ['btn-order', 'btn-inventory', 'btn-shipping', 'btn-parcels'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
+                btn.style.backgroundColor = '';
+            });
+
+            const activeBtn = document.getElementById('btn-' + tabName);
+            activeBtn.className = 'px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition';
+            activeBtn.style.backgroundColor = '#5D728A';
 
             if (tabName === 'order') {
                 document.getElementById('tab-order').classList.remove('hidden');
-                document.getElementById('btn-order').className = 'px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition';
-                document.getElementById('btn-order').style.backgroundColor = '#5D728A';
                 renderOrders();
             } else if (tabName === 'inventory') {
                 document.getElementById('tab-inventory').classList.remove('hidden');
-                document.getElementById('btn-inventory').className = 'px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition';
-                document.getElementById('btn-inventory').style.backgroundColor = '#5D728A';
                 renderInventory();
             } else if (tabName === 'shipping') {
                 document.getElementById('tab-shipping').classList.remove('hidden');
-                document.getElementById('btn-shipping').className = 'px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition';
-                document.getElementById('btn-shipping').style.backgroundColor = '#5D728A';
                 renderShipping();
+            } else if (tabName === 'parcels') {
+                document.getElementById('tab-parcels').classList.remove('hidden');
+                renderParcels();
             }
         }
 
-        // 排序按鈕切換邏輯
         function toggleSort() {
             isSortedByStatus = !isSortedByStatus;
             const btn = document.getElementById('sortBtn');
@@ -333,7 +381,6 @@
                 return matchSearch && matchFilter;
             });
 
-            // 依訂貨狀況排序：待訂 > 已訂 > 工作室 > 已回台
             if (isSortedByStatus) {
                 const statusOrder = { '待訂': 1, '已訂': 2, '工作室': 3, '已回台': 4 };
                 filtered.sort((a, b) => (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99));
@@ -487,6 +534,55 @@
         function generateShippingList() {
             alert('系統已自動過濾並整理所有在「工作室」與「已回台」的商品供您寄出核對！');
             switchTab('shipping');
+        }
+
+        // --- 寄出包裹記錄功能 ---
+        function addParcel(e) {
+            e.preventDefault();
+            const newParcel = {
+                id: Date.now(),
+                date: document.getElementById('parcelDate').value,
+                kg: parseFloat(document.getElementById('parcelKg').value) || 0,
+                items: document.getElementById('parcelItems').value
+            };
+            parcels.unshift(newParcel);
+            localStorage.setItem('shop_parcels', JSON.stringify(parcels));
+            renderParcels();
+            document.getElementById('parcelForm').reset();
+            document.getElementById('parcelDate').valueAsDate = new Date();
+        }
+
+        function deleteParcel(id) {
+            parcels = parcels.filter(p => p.id !== id);
+            localStorage.setItem('shop_parcels', JSON.stringify(parcels));
+            renderParcels();
+        }
+
+        function renderParcels() {
+            const tbody = document.getElementById('parcelTableBody');
+            tbody.innerHTML = '';
+
+            if (parcels.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">目前沒有寄出包裹記錄</td></tr>`;
+                document.getElementById('totalParcelKg').innerText = '總計 0.0 KG';
+                return;
+            }
+
+            let totalKg = 0;
+            parcels.forEach(p => {
+                totalKg += p.kg;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-[#F9F7F2] transition">
+                        <td class="p-3 text-slate-600">${p.date}</td>
+                        <td class="p-3 font-bold text-slate-800">${p.kg} KG</td>
+                        <td class="p-3 text-slate-700">${p.items}</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteParcel(${p.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            document.getElementById('totalParcelKg').innerText = `總計 ${totalKg.toFixed(1)} KG`;
         }
 
         renderOrders();
