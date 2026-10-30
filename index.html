@@ -46,38 +46,46 @@
             <!-- 新增表單 -->
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">➕ 新增訂單 / 商品記錄</h2>
-                <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
+                <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-9 gap-3">
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">日期</label>
-                        <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
+                        <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">檔口名稱</label>
-                        <input type="text" id="boothName" placeholder="例如：APM / 檔口" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <input type="text" id="boothName" placeholder="例如：APM" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div class="lg:col-span-2">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱</label>
+                        <input type="text" id="itemName" placeholder="例如：自訂款毛衣" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱 / 顏色 / 尺寸</label>
-                        <input type="text" id="itemName" placeholder="例如：自訂款毛衣 白F" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">顏色 (選填)</label>
+                        <input type="text" id="itemColor" placeholder="例如：白色" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">尺寸 (選填)</label>
+                        <input type="text" id="itemSize" placeholder="例如：F / S" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">數量</label>
-                        <input type="number" id="itemQty" value="1" min="1" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <input type="number" id="itemQty" value="1" min="1" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">單價 (韓元/台幣)</label>
-                        <input type="number" id="itemPrice" value="0" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">單價</label>
+                        <input type="number" id="itemPrice" value="0" min="0" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">訂貨狀況</label>
-                        <select id="itemStatus" class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <select id="itemStatus" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
                             <option value="待訂">待訂</option>
                             <option value="已訂">已訂</option>
                             <option value="工作室">工作室</option>
                             <option value="已回台">已回台</option>
                         </select>
                     </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增記錄</button>
+                    <div class="sm:col-span-2 lg:col-span-9 flex justify-end mt-1">
+                        <button type="submit" class="text-white font-medium py-2 px-6 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增記錄</button>
                     </div>
                 </form>
             </div>
@@ -92,7 +100,7 @@
                         </button>
                     </div>
                     <div class="flex gap-2">
-                        <input type="text" id="searchOrder" placeholder="搜尋檔口或商品..." oninput="renderOrders()" class="milk-input border rounded-lg px-3 py-1.5 text-sm focus:outline-none">
+                        <input type="text" id="searchOrder" placeholder="搜尋檔口、名稱或顏色..." oninput="renderOrders()" class="milk-input border rounded-lg px-3 py-1.5 text-sm focus:outline-none">
                         <select id="filterStatus" onchange="renderOrders()" class="milk-input border rounded-lg px-3 py-1.5 text-sm focus:outline-none">
                             <option value="">全部狀態</option>
                             <option value="待訂">待訂</option>
@@ -109,6 +117,8 @@
                                 <th class="p-3">日期</th>
                                 <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
+                                <th class="p-3">顏色</th>
+                                <th class="p-3">尺寸</th>
                                 <th class="p-3">數量</th>
                                 <th class="p-3">單價</th>
                                 <th class="p-3">總花費</th>
@@ -193,6 +203,8 @@
                                 <th class="p-3">日期</th>
                                 <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
+                                <th class="p-3">顏色</th>
+                                <th class="p-3">尺寸</th>
                                 <th class="p-3">數量</th>
                                 <th class="p-3">總花費</th>
                                 <th class="p-3">目前狀態</th>
@@ -266,6 +278,8 @@
                 date: document.getElementById('orderDate').value,
                 booth: document.getElementById('boothName').value,
                 item: document.getElementById('itemName').value,
+                color: document.getElementById('itemColor').value.trim() || '-',
+                size: document.getElementById('itemSize').value.trim() || '-',
                 qty: parseInt(document.getElementById('itemQty').value),
                 price: parseFloat(document.getElementById('itemPrice').value) || 0,
                 status: document.getElementById('itemStatus').value,
@@ -310,7 +324,11 @@
 
             tbody.innerHTML = '';
             let filtered = orders.filter(o => {
-                const matchSearch = o.booth.toLowerCase().includes(search) || o.item.toLowerCase().includes(search) || (o.note && o.note.toLowerCase().includes(search));
+                const matchSearch = o.booth.toLowerCase().includes(search) || 
+                                    o.item.toLowerCase().includes(search) || 
+                                    o.color.toLowerCase().includes(search) || 
+                                    o.size.toLowerCase().includes(search) || 
+                                    (o.note && o.note.toLowerCase().includes(search));
                 const matchFilter = filter === '' || o.status === filter;
                 return matchSearch && matchFilter;
             });
@@ -322,7 +340,7 @@
             }
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有相關訂貨記錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="11" class="p-4 text-center text-slate-400">目前沒有相關訂貨記錄</td></tr>`;
                 document.getElementById('totalCostSum').innerText = '0';
                 return;
             }
@@ -342,7 +360,9 @@
                     <tr class="hover:bg-[#F9F7F2] transition">
                         <td class="p-3 text-slate-600 text-xs">${o.date}</td>
                         <td class="p-3 font-medium text-slate-900">${o.booth}</td>
-                        <td class="p-3 text-slate-800">${o.item}</td>
+                        <td class="p-3 text-slate-800 font-medium">${o.item}</td>
+                        <td class="p-3 text-slate-600">${o.color}</td>
+                        <td class="p-3 text-slate-600">${o.size}</td>
                         <td class="p-3 text-slate-600">${o.qty}</td>
                         <td class="p-3 text-slate-600">${o.price.toLocaleString()}</td>
                         <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
@@ -432,7 +452,7 @@
             tbody.innerHTML = '';
 
             if (shippingItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-slate-400">目前沒有處於「工作室」或「已回台」的待寄出商品</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400">目前沒有處於「工作室」或「已回台」的待寄出商品</td></tr>`;
                 return;
             }
 
@@ -443,7 +463,9 @@
                     <tr class="hover:bg-[#F9F7F2] transition">
                         <td class="p-3 text-slate-600 text-xs">${o.date}</td>
                         <td class="p-3 font-medium text-slate-900">${o.booth}</td>
-                        <td class="p-3 text-slate-800">${o.item}</td>
+                        <td class="p-3 text-slate-800 font-medium">${o.item}</td>
+                        <td class="p-3 text-slate-600">${o.color}</td>
+                        <td class="p-3 text-slate-600">${o.size}</td>
                         <td class="p-3 text-slate-600">${o.qty}</td>
                         <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
                         <td class="p-3">
