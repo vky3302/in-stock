@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>adorable 庫存</title>
+    <title>服飾店訂貨與庫存管理系統</title>
     <!-- 引入 Tailwind CSS 讓介面簡潔美觀 -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -13,8 +13,7 @@
         <!-- 標題 -->
         <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
-                <h1 class="text-2xl font-bold text-gray-900"> 🫜 adorable 庫存</h1>
-                <p class="text-sm text-gray-500">❤️</p>
+                <h1 class="text-2xl font-bold text-gray-900"> adorable 庫存管理</h1>
             </div>
             <div class="flex gap-2">
                 <button onclick="switchTab('order')" id="btn-order" class="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium shadow">訂貨與檔口管理</button>
@@ -28,7 +27,7 @@
             <!-- 新增表單 -->
             <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
                 <h2 class="text-lg font-semibold mb-4 text-gray-800">➕ 新增訂單 / 商品記錄</h2>
-                <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+                <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">日期</label>
                         <input type="date" id="orderDate" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
@@ -44,6 +43,10 @@
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">數量</label>
                         <input type="number" id="itemQty" value="1" min="1" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-gray-600 mb-1">單價 (韓元/台幣)</label>
+                        <input type="number" id="itemPrice" value="0" min="0" required class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-gray-600 mb-1">訂貨狀況</label>
@@ -83,6 +86,8 @@
                                 <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
                                 <th class="p-3">數量</th>
+                                <th class="p-3">單價</th>
+                                <th class="p-3">總花費</th>
                                 <th class="p-3">狀況</th>
                                 <th class="p-3 text-right">操作</th>
                             </tr>
@@ -91,6 +96,11 @@
                             <!-- 動態插入 -->
                         </tbody>
                     </table>
+                </div>
+                <!-- 總計列 -->
+                <div class="p-4 bg-gray-50 border-t border-gray-200 flex justify-end items-center gap-6 text-sm">
+                    <span class="font-medium text-gray-600">目前清單總花費：</span>
+                    <span id="totalCostSum" class="text-lg font-bold text-indigo-600">0</span>
                 </div>
             </div>
         </section>
@@ -159,6 +169,7 @@
                                 <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
                                 <th class="p-3">數量</th>
+                                <th class="p-3">總花費</th>
                                 <th class="p-3">目前狀態</th>
                                 <th class="p-3 text-right">狀態切換</th>
                             </tr>
@@ -174,14 +185,11 @@
 
     <!-- JavaScript 邏輯 -->
     <script>
-        // 初始化 LocalStorage 資料
         let orders = JSON.parse(localStorage.getItem('shop_orders')) || [];
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
 
-        // 自動填入今天的日期
         document.getElementById('orderDate').valueAsDate = new Date();
 
-        // 切換頁籤
         function switchTab(tabName) {
             document.getElementById('tab-order').classList.add('hidden');
             document.getElementById('tab-inventory').classList.add('hidden');
@@ -215,6 +223,7 @@
                 booth: document.getElementById('boothName').value,
                 item: document.getElementById('itemName').value,
                 qty: parseInt(document.getElementById('itemQty').value),
+                price: parseFloat(document.getElementById('itemPrice').value) || 0,
                 status: document.getElementById('itemStatus').value
             };
             orders.unshift(newOrder);
@@ -254,11 +263,16 @@
             });
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">目前沒有相關訂貨記錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="8" class="p-4 text-center text-gray-400">目前沒有相關訂貨記錄</td></tr>`;
+                document.getElementById('totalCostSum').innerText = '0';
                 return;
             }
 
+            let totalSum = 0;
             filtered.forEach(o => {
+                const totalCost = o.qty * o.price;
+                totalSum += totalCost;
+
                 let badgeColor = 'bg-gray-100 text-gray-800';
                 if (o.status === '待訂') badgeColor = 'bg-amber-100 text-amber-800';
                 if (o.status === '已訂') badgeColor = 'bg-blue-100 text-blue-800';
@@ -271,6 +285,8 @@
                         <td class="p-3 font-medium text-gray-900">${o.booth}</td>
                         <td class="p-3 text-gray-800">${o.item}</td>
                         <td class="p-3 text-gray-600">${o.qty}</td>
+                        <td class="p-3 text-gray-600">${o.price.toLocaleString()}</td>
+                        <td class="p-3 font-semibold text-indigo-600">${totalCost.toLocaleString()}</td>
                         <td class="p-3">
                             <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor} border-0 cursor-pointer">
                                 <option value="待訂" ${o.status === '待訂' ? 'selected' : ''}>待訂</option>
@@ -285,6 +301,7 @@
                     </tr>
                 `;
             });
+            document.getElementById('totalCostSum').innerText = totalSum.toLocaleString();
         }
 
         // --- 庫存相關功能 ---
@@ -347,18 +364,18 @@
         // --- 韓國出貨清單功能 ---
         function renderShipping() {
             const tbody = document.getElementById('shippingTableBody');
-            // 篩選出狀態為「工作室」或「已回台」的項目作為出貨/分流追蹤
             const shippingItems = orders.filter(o => o.status === '工作室' || o.status === '已回台');
             
             document.getElementById('shippingCount').innerText = `共 ${shippingItems.length} 項`;
             tbody.innerHTML = '';
 
             if (shippingItems.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-gray-400">目前沒有處於「工作室」或「已回台」的待寄出商品</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="p-4 text-center text-gray-400">目前沒有處於「工作室」或「已回台」的待寄出商品</td></tr>`;
                 return;
             }
 
             shippingItems.forEach(o => {
+                const totalCost = o.qty * o.price;
                 let badgeColor = o.status === '工作室' ? 'bg-purple-100 text-purple-800' : 'bg-emerald-100 text-emerald-800';
                 tbody.innerHTML += `
                     <tr class="hover:bg-gray-50">
@@ -366,6 +383,7 @@
                         <td class="p-3 font-medium text-gray-900">${o.booth}</td>
                         <td class="p-3 text-gray-800">${o.item}</td>
                         <td class="p-3 text-gray-600">${o.qty}</td>
+                        <td class="p-3 font-semibold text-indigo-600">${totalCost.toLocaleString()}</td>
                         <td class="p-3">
                             <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor}">${o.status}</span>
                         </td>
@@ -386,7 +404,6 @@
             switchTab('shipping');
         }
 
-        // 初始載入預設頁面
         renderOrders();
     </script>
 </body>
