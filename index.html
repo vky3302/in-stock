@@ -35,6 +35,7 @@
             </div>
             <div class="flex flex-wrap gap-2">
                 <button onclick="switchTab('order')" id="btn-order" class="px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition" style="background-color: #5D728A;">訂貨與檔口管理</button>
+                <button onclick="switchTab('pending')" id="btn-pending" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">待訂商品</button>
                 <button onclick="switchTab('shipping')" id="btn-shipping" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國工作室</button>
                 <button onclick="switchTab('arrived')" id="btn-arrived" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">已回台商品</button>
                 <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">庫存管理</button>
@@ -128,7 +129,7 @@
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center flex-wrap gap-4">
                     <div class="flex items-center gap-3">
                         <h2 class="text-lg font-semibold" style="color: #5A4F46;">📋 訂貨與檔口追蹤清單</h2>
-                        <button onclick="toggleSort()" id="sortBtn" class="bg-[#F4F1EA] hover:bg-[#EAE4DB] text-slate-700 text-xs font-medium px-3 py.5 rounded-lg border border-[#E2DBD0] transition">
+                        <button onclick="toggleSort()" id="sortBtn" class="bg-[#F4F1EA] hover:bg-[#EAE4DB] text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-[#E2DBD0] transition">
                             🔄 狀態排序：預設
                         </button>
                     </div>
@@ -172,7 +173,41 @@
             </div>
         </section>
 
-        <!-- 頁籤 2：韓國工作室 (狀態為「工作室」) -->
+        <!-- 頁籤 2：待訂商品 (狀態為「待訂」) -->
+        <section id="tab-pending" class="hidden space-y-6">
+            <div class="milk-card p-4 rounded-xl shadow-sm border">
+                <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">📝 待訂商品清單</h2>
+                <p class="text-sm text-slate-500">此處專門顯示目前狀態為「待訂」的品項，方便您統計並準備向檔口下單。</p>
+            </div>
+            <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
+                <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">🛒 待下單商品</h2>
+                    <span id="pendingCount" class="text-xs bg-[#FAF3E9] text-[#A67C52] px-2.5 py-1 rounded-full font-medium">共 0 項</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#F9F7F2] text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-3">日期</th>
+                                <th class="p-3">檔口</th>
+                                <th class="p-3">商品名稱</th>
+                                <th class="p-3">顏色</th>
+                                <th class="p-3">尺寸</th>
+                                <th class="p-3">數量</th>
+                                <th class="p-3">總花費</th>
+                                <th class="p-3">備註</th>
+                                <th class="p-3 text-right">狀態切換</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pendingTableBody" class="divide-y divide-[#EFECE6] text-sm">
+                            <!-- 動態插入 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 頁籤 3：韓國工作室 (狀態為「工作室」) -->
         <section id="tab-shipping" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室清單</h2>
@@ -206,7 +241,7 @@
             </div>
         </section>
 
-        <!-- 頁籤 3：已回台商品 (狀態為「已回台」) -->
+        <!-- 頁籤 4：已回台商品 (狀態為「已回台」) -->
         <section id="tab-arrived" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🛬 已回台商品清單</h2>
@@ -240,7 +275,7 @@
             </div>
         </section>
 
-        <!-- 頁籤 4：庫存管理 -->
+        <!-- 頁籤 5：庫存管理 -->
         <section id="tab-inventory" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增庫存商品</h2>
@@ -281,7 +316,7 @@
             </div>
         </section>
 
-        <!-- 頁籤 5：寄出包裹記錄 -->
+        <!-- 頁籤 6：寄出包裹記錄 -->
         <section id="tab-parcels" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增寄回台灣包裹記錄</h2>
@@ -340,7 +375,7 @@
         document.getElementById('parcelDate').valueAsDate = new Date();
 
         function switchTab(tabName) {
-            ['order', 'shipping', 'arrived', 'inventory', 'parcels'].forEach(t => {
+            ['order', 'pending', 'shipping', 'arrived', 'inventory', 'parcels'].forEach(t => {
                 document.getElementById('tab-' + t).classList.add('hidden');
                 const btn = document.getElementById('btn-' + t);
                 btn.className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
@@ -353,6 +388,7 @@
             activeBtn.style.backgroundColor = '#5D728A';
 
             if (tabName === 'order') renderOrders();
+            if (tabName === 'pending') renderPending();
             if (tabName === 'shipping') renderShipping();
             if (tabName === 'arrived') renderArrived();
             if (tabName === 'inventory') renderInventory();
@@ -528,6 +564,43 @@
             document.getElementById('totalCostSum').innerText = totalSum.toLocaleString();
         }
 
+        // --- 待訂商品清單 (狀態：待訂) ---
+        function renderPending() {
+            const tbody = document.getElementById('pendingTableBody');
+            const items = orders.filter(o => o.status === '待訂');
+            document.getElementById('pendingCount').innerText = `共 ${items.length} 項`;
+            tbody.innerHTML = '';
+
+            if (items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有處於「待訂」的商品</td></tr>`;
+                return;
+            }
+
+            items.forEach(o => {
+                const totalCost = o.qty * o.price;
+                tbody.innerHTML += `
+                    <tr class="hover:bg-[#F9F7F2] transition">
+                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
+                        <td class="p-3 font-medium text-slate-900">${o.booth}</td>
+                        <td class="p-3 text-slate-800 font-medium">${o.item}</td>
+                        <td class="p-3 text-slate-600">${o.color}</td>
+                        <td class="p-3 text-slate-600">${o.size}</td>
+                        <td class="p-3 text-slate-600">${o.qty}</td>
+                        <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
+                        <td class="p-3 text-slate-600 text-xs">${o.note || '-'}</td>
+                        <td class="p-3 text-right">
+                            <select onchange="updateOrderField(${o.id}, 'status', this.value); renderPending();" class="text-xs border border-[#E2DBD0] rounded px-2 py-1 focus:outline-none bg-[#FAF3E9] text-[#A67C52] font-semibold">
+                                <option value="待訂" selected>待訂</option>
+                                <option value="已訂">改為 已訂</option>
+                                <option value="工作室">改為 工作室</option>
+                                <option value="已回台">改為 已回台</option>
+                            </select>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
         // --- 韓國工作室清單 (狀態：工作室) ---
         function renderShipping() {
             const tbody = document.getElementById('shippingTableBody');
@@ -557,6 +630,7 @@
                                 <option value="工作室" selected>工作室</option>
                                 <option value="已回台">改為 已回台</option>
                                 <option value="已訂">改回 已訂</option>
+                                <option value="待訂">改回 待訂</option>
                             </select>
                         </td>
                     </tr>
@@ -593,6 +667,7 @@
                                 <option value="已回台" selected>已回台</option>
                                 <option value="工作室">改回 工作室</option>
                                 <option value="已訂">改回 已訂</option>
+                                <option value="待訂">改回 待訂</option>
                             </select>
                         </td>
                     </tr>
