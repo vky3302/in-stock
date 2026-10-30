@@ -44,46 +44,84 @@
         <!-- 頁籤 1：訂貨與檔口管理 -->
         <section id="tab-order" class="space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
-                <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">➕ 新增訂單 / 商品記錄</h2>
-                <form id="orderForm" onsubmit="addOrder(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-9 gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">日期</label>
-                        <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">➕ 新增訂單 / 商品記錄</h2>
+                    <button type="button" onclick="toggleMultiColor()" id="multiColorBtn" class="bg-[#F4F1EA] hover:bg-[#EAE4DB] text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-[#E2DBD0] transition">
+                        ➕ 展開多色快速輸入
+                    </button>
+                </div>
+
+                <form id="orderForm" onsubmit="addOrder(event)">
+                    <!-- 基本共用欄位 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-3">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">日期</label>
+                            <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">檔口名稱</label>
+                            <input type="text" id="boothName" placeholder="例如：APM" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱</label>
+                            <input type="text" id="itemName" placeholder="例如：自訂款毛衣" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">單價</label>
+                            <input type="number" id="itemPrice" value="0" min="0" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">訂貨狀況</label>
+                            <select id="itemStatus" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                                <option value="待訂">待訂</option>
+                                <option value="已訂">已訂</option>
+                                <option value="工作室">工作室</option>
+                                <option value="已回台">已回台</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">檔口名稱</label>
-                        <input type="text" id="boothName" placeholder="例如：APM" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+
+                    <!-- 單色輸入模式 (預設) -->
+                    <div id="singleColorBox" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#EFECE6]">
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">顏色 (選填)</label>
+                            <input type="text" id="itemColor" placeholder="例如：白色" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">尺寸 (選填)</label>
+                            <input type="text" id="itemSize" placeholder="例如：F" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-slate-500 mb-1">數量</label>
+                            <input type="number" id="itemQty" value="1" min="1" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+                        </div>
                     </div>
-                    <div class="lg:col-span-2">
-                        <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱</label>
-                        <input type="text" id="itemName" placeholder="例如：自訂款毛衣" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
+
+                    <!-- 多色快速輸入模式 (預設隱藏) -->
+                    <div id="multiColorBox" class="hidden space-y-3 pt-3 border-t border-[#EFECE6]">
+                        <p class="text-xs text-slate-500 font-medium">💡 同一商品快速填寫多個顏色與尺寸（沒填寫的行數會自動忽略）：</p>
+                        
+                        <!-- 色系 1 -->
+                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
+                            <div><input type="text" id="mColor1" placeholder="顏色1 (例: 白)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="text" id="mSize1" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="number" id="mQty1" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                        </div>
+                        <!-- 色系 2 -->
+                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
+                            <div><input type="text" id="mColor2" placeholder="顏色2 (例: 黑)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="text" id="mSize2" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="number" id="mQty2" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                        </div>
+                        <!-- 色系 3 -->
+                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
+                            <div><input type="text" id="mColor3" placeholder="顏色3 (例: 灰)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="text" id="mSize3" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                            <div><input type="number" id="mQty3" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">顏色 (選填)</label>
-                        <input type="text" id="itemColor" placeholder="例如：白色" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">尺寸 (選填)</label>
-                        <input type="text" id="itemSize" placeholder="例如：F / S" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">數量</label>
-                        <input type="number" id="itemQty" value="1" min="1" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">單價</label>
-                        <input type="number" id="itemPrice" value="0" min="0" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">訂貨狀況</label>
-                        <select id="itemStatus" class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none">
-                            <option value="待訂">待訂</option>
-                            <option value="已訂">已訂</option>
-                            <option value="工作室">工作室</option>
-                            <option value="已回台">已回台</option>
-                        </select>
-                    </div>
-                    <div class="sm:col-span-2 lg:col-span-9 flex justify-end mt-1">
+
+                    <div class="flex justify-end mt-4">
                         <button type="submit" class="text-white font-medium py-2 px-6 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增記錄</button>
                     </div>
                 </form>
@@ -121,7 +159,7 @@
                                 <th class="p-3">單價</th>
                                 <th class="p-3">總花費</th>
                                 <th class="p-3">狀況</th>
-                                <th class="p-3">備註 (可直接修改)</th>
+                                <th class="p-3">備註</th>
                                 <th class="p-3 text-right">操作</th>
                             </tr>
                         </thead>
@@ -232,7 +270,7 @@
                     </div>
                     <div class="sm:col-span-2">
                         <label class="block text-xs font-medium text-slate-500 mb-1">包含出貨名單 / 內容物摘要</label>
-                        <input type="text" id="parcelItems" placeholder="例如：毛衣白F x2, 喇叭褲黑S x1 (或從下方勾選)" class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <input type="text" id="parcelItems" placeholder="例如：毛衣白F x2, 喇叭褲黑S x1" class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
                     </div>
                     <div class="sm:col-span-3 lg:col-span-4 flex justify-end">
                         <button type="submit" class="text-white font-medium py-2 px-6 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增包裹記錄</button>
@@ -270,6 +308,7 @@
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
+        let isMultiColorMode = false;
 
         document.getElementById('orderDate').valueAsDate = new Date();
         document.getElementById('parcelDate').valueAsDate = new Date();
@@ -318,22 +357,81 @@
             renderOrders();
         }
 
+        // 切換單色/多色輸入模式
+        function toggleMultiColor() {
+            isMultiColorMode = !isMultiColorMode;
+            const sBox = document.getElementById('singleColorBox');
+            const mBox = document.getElementById('multiColorBox');
+            const btn = document.getElementById('multiColorBtn');
+
+            if (isMultiColorMode) {
+                sBox.classList.add('hidden');
+                mBox.classList.remove('hidden');
+                btn.className = 'bg-[#5D728A] text-white text-xs font-medium px-3 py-1.5 rounded-lg transition';
+                btn.innerText = '➖ 切回單色輸入';
+            } else {
+                sBox.classList.remove('hidden');
+                mBox.classList.add('hidden');
+                btn.className = 'bg-[#F4F1EA] hover:bg-[#EAE4DB] text-slate-700 text-xs font-medium px-3 py-1.5 rounded-lg border border-[#E2DBD0] transition';
+                btn.innerText = '➕ 展開多色快速輸入';
+            }
+        }
+
         // --- 訂單相關功能 ---
         function addOrder(e) {
             e.preventDefault();
-            const newOrder = {
-                id: Date.now(),
-                date: document.getElementById('orderDate').value,
-                booth: document.getElementById('boothName').value,
-                item: document.getElementById('itemName').value,
-                color: document.getElementById('itemColor').value.trim() || '-',
-                size: document.getElementById('itemSize').value.trim() || '-',
-                qty: parseInt(document.getElementById('itemQty').value),
-                price: parseFloat(document.getElementById('itemPrice').value) || 0,
-                status: document.getElementById('itemStatus').value,
-                note: ''
-            };
-            orders.unshift(newOrder);
+            const date = document.getElementById('orderDate').value;
+            const booth = document.getElementById('boothName').value;
+            const item = document.getElementById('itemName').value;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            const status = document.getElementById('itemStatus').value;
+
+            if (isMultiColorMode) {
+                // 多色模式：檢查 3 個欄位，有填顏色的就各自建立一筆
+                let addedCount = 0;
+                for (let i = 1; i <= 3; i++) {
+                    const color = document.getElementById(`mColor${i}`).value.trim();
+                    const size = document.getElementById(`mSize${i}`).value.trim() || '-';
+                    const qty = parseInt(document.getElementById(`mQty${i}`).value) || 1;
+
+                    if (color !== '') {
+                        const newOrder = {
+                            id: Date.now() + i,
+                            date,
+                            booth,
+                            item,
+                            color,
+                            size,
+                            qty,
+                            price,
+                            status,
+                            note: ''
+                        };
+                        orders.unshift(newOrder);
+                        addedCount++;
+                    }
+                }
+                if (addedCount === 0) {
+                    alert('請至少填寫一個顏色！');
+                    return;
+                }
+            } else {
+                // 單色模式
+                const newOrder = {
+                    id: Date.now(),
+                    date,
+                    booth,
+                    item,
+                    color: document.getElementById('itemColor').value.trim() || '-',
+                    size: document.getElementById('itemSize').value.trim() || '-',
+                    qty: parseInt(document.getElementById('itemQty').value),
+                    price,
+                    status,
+                    note: ''
+                };
+                orders.unshift(newOrder);
+            }
+
             saveAndRender();
             document.getElementById('orderForm').reset();
             document.getElementById('orderDate').valueAsDate = new Date();
@@ -344,19 +442,18 @@
             saveAndRender();
         }
 
-        function updateOrderStatus(id, newStatus) {
+        function updateOrderField(id, field, value) {
             const order = orders.find(o => o.id === id);
             if (order) {
-                order.status = newStatus;
-                saveAndRender();
-            }
-        }
-
-        function updateOrderNote(id, newNote) {
-            const order = orders.find(o => o.id === id);
-            if (order) {
-                order.note = newNote;
+                if (field === 'qty' || field === 'price') {
+                    order[field] = parseFloat(value) || 0;
+                } else {
+                    order[field] = value;
+                }
                 localStorage.setItem('shop_orders', JSON.stringify(orders));
+                if (field === 'qty' || field === 'price') {
+                    renderOrders();
+                }
             }
         }
 
@@ -405,24 +502,38 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
-                        <td class="p-3 font-medium text-slate-900">${o.booth}</td>
-                        <td class="p-3 text-slate-800 font-medium">${o.item}</td>
-                        <td class="p-3 text-slate-600">${o.color}</td>
-                        <td class="p-3 text-slate-600">${o.size}</td>
-                        <td class="p-3 text-slate-600">${o.qty}</td>
-                        <td class="p-3 text-slate-600">${o.price.toLocaleString()}</td>
+                        <td class="p-2">
+                            <input type="date" value="${o.date}" onchange="updateOrderField(${o.id}, 'date', this.value)" class="milk-input border rounded px-1.5 py-1 text-xs text-slate-700 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" value="${o.booth}" oninput="updateOrderField(${o.id}, 'booth', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-900 w-28 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" value="${o.item}" oninput="updateOrderField(${o.id}, 'item', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-800 w-32 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" value="${o.color}" oninput="updateOrderField(${o.id}, 'color', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-20 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="text" value="${o.size}" oninput="updateOrderField(${o.id}, 'size', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-16 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" min="1" value="${o.qty}" oninput="updateOrderField(${o.id}, 'qty', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-16 focus:outline-none">
+                        </td>
+                        <td class="p-2">
+                            <input type="number" min="0" value="${o.price}" oninput="updateOrderField(${o.id}, 'price', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-20 focus:outline-none">
+                        </td>
                         <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
-                        <td class="p-3">
-                            <select onchange="updateOrderStatus(${o.id}, this.value)" class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor} border-0 cursor-pointer focus:outline-none">
+                        <td class="p-2">
+                            <select onchange="updateOrderField(${o.id}, 'status', this.value); renderOrders();" class="text-xs font-semibold px-2.5 py-1 rounded-full ${badgeColor} border-0 cursor-pointer focus:outline-none">
                                 <option value="待訂" ${o.status === '待訂' ? 'selected' : ''}>待訂</option>
                                 <option value="已訂" ${o.status === '已訂' ? 'selected' : ''}>已訂</option>
                                 <option value="工作室" ${o.status === '工作室' ? 'selected' : ''}>工作室</option>
                                 <option value="已回台" ${o.status === '已回台' ? 'selected' : ''}>已回台</option>
                             </select>
                         </td>
-                        <td class="p-3">
-                            <input type="text" value="${o.note || ''}" placeholder="點此輸入備註..." oninput="updateOrderNote(${o.id}, this.value)" class="milk-input w-full border rounded px-2 py-1 text-xs text-slate-700 focus:outline-none">
+                        <td class="p-2">
+                            <input type="text" value="${o.note || ''}" placeholder="備註..." oninput="updateOrderField(${o.id}, 'note', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-28 focus:outline-none">
                         </td>
                         <td class="p-3 text-right">
                             <button onclick="deleteOrder(${o.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button>
@@ -520,7 +631,7 @@
                         </td>
                         <td class="p-3 text-slate-600 text-xs">${o.note || '-'}</td>
                         <td class="p-3 text-right">
-                            <select onchange="updateOrderStatus(${o.id}, this.value); renderShipping();" class="text-xs border border-[#E2DBD0] rounded px-2 py-1 focus:outline-none">
+                            <select onchange="updateOrderField(${o.id}, 'status', this.value); renderShipping();" class="text-xs border border-[#E2DBD0] rounded px-2 py-1 focus:outline-none">
                                 <option value="工作室" ${o.status === '工作室' ? 'selected' : ''}>設為 工作室</option>
                                 <option value="已回台" ${o.status === '已回台' ? 'selected' : ''}>設為 已回台</option>
                                 <option value="已訂" ${o.status === '已訂' ? 'selected' : ''}>移回 已訂</option>
