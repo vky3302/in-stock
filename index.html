@@ -59,8 +59,8 @@
                     <!-- 基本共用欄位 -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">日期 (自動帶入)</label>
-                            <input type="date" id="orderDate" readonly class="w-full border border-[#E2DBD0] rounded-lg px-2.5 py-2 text-sm bg-slate-100 text-slate-500 cursor-not-allowed focus:outline-none">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">日期 (可自由選擇)</label>
+                            <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">檔口名稱</label>
@@ -305,8 +305,8 @@
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增寄回台灣包裹記錄</h2>
                 <form id="parcelForm" onsubmit="addParcel(event)" class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">寄出日期 (自動帶入)</label>
-                        <input type="date" id="parcelDate" readonly class="w-full border border-[#E2DBD0] rounded-lg px-3 py-2 text-sm bg-slate-100 text-slate-500 cursor-not-allowed focus:outline-none">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">寄出日期 (可選擇)</label>
+                        <input type="date" id="parcelDate" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">包裹重量 (公斤 / KG)</label>
@@ -344,7 +344,7 @@
 
     </div>
 
-    <!-- JavaScript 雲端同步與多色自動拆單邏輯 -->
+    <!-- JavaScript 完整邏輯 -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
         let orders = [];
@@ -454,7 +454,6 @@
             }
         }
 
-        // 新增訂單（支援多色輸入模式自動用逗號拆單，例如：灰20,白20 或 灰F20,白F20）
         function addOrder(e) {
             e.preventDefault();
             const date = document.getElementById('orderDate').value;
@@ -470,7 +469,6 @@
                     return;
                 }
 
-                // 以逗號分隔每個項目（支援全形與半形逗號）
                 const entries = rawText.split(/[,，]/);
                 let addedCount = 0;
 
@@ -478,7 +476,6 @@
                     const cleanEntry = entry.trim();
                     if (!cleanEntry) return;
 
-                    // 智慧解析：抓取結尾數字作為數量，前面拆解顏色與尺寸
                     const match = cleanEntry.match(/^(.+?)(\d+)$/);
                     let color = cleanEntry;
                     let size = '-';
@@ -488,7 +485,6 @@
                         let prefix = match[1].trim();
                         qty = parseInt(match[2], 10) || 1;
 
-                        // 檢查結尾是否有尺寸代號（如 F, S, M, L 等）
                         const sizeMatch = prefix.match(/^(.*?)([FfSsMmLl尺寸]$)$/);
                         if (sizeMatch) {
                             color = sizeMatch[1].trim();
@@ -538,7 +534,6 @@
             document.getElementById('orderForm').reset();
             document.getElementById('orderDate').valueAsDate = new Date();
             if (isMultiColorMode) {
-                document.getElementById('modeToggle').checked = false;
                 toggleMultiColor();
             }
         }
