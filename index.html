@@ -260,10 +260,15 @@
             </div>
         </section>
 
-        <!-- 頁籤 5：庫存管理 (100% 還原原本的手動庫存表在最上方，並支援連動訂貨表) -->
+        <!-- 頁籤 5：庫存管理 -->
         <section id="tab-inventory" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
-                <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增庫存商品</h2>
+                <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📦 新增庫存商品</h2>
+                    <button type="button" onclick="importShippingToInventory()" class="bg-[#EAF0F6] hover:bg-[#D6E2F0] text-[#5D728A] text-xs font-semibold px-3.5 py-2 rounded-lg border border-[#C6D2E1] transition shadow-sm">
+                        📥 一鍵將「韓國工作室」商品匯入庫存
+                    </button>
+                </div>
                 <form id="inventoryForm" onsubmit="addInventory(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱/型號</label>
@@ -357,8 +362,8 @@
         document.getElementById('orderDate').valueAsDate = new Date();
         document.getElementById('parcelDate').valueAsDate = new Date();
 
-        // 先渲染本地快取資料，確保畫面一打開就有東西
         renderOrders();
+        renderInventory();
 
         function loadDataFromCloud() {
             const statusEl = document.getElementById('syncStatus');
@@ -383,11 +388,13 @@
                     }
                     statusEl.innerText = '✅ 雲端同步成功 (已連線 Google 試算表)';
                     renderOrders();
+                    renderInventory();
                 })
                 .catch(error => {
                     console.error('Error loading data:', error);
                     statusEl.innerText = '⚠️ 雲端連線失敗，目前顯示離線快取';
                     renderOrders();
+                    renderInventory();
                 });
         }
 
@@ -460,24 +467,32 @@
             }
         }
 
-        // 當訂單狀態改變時，同步調整庫存頁面的數量（到工作室+，改回台-）
-        function syncOrderToInventory(itemName, color, size, deltaQty) {
-            if (deltaQty === 0) return;
-            const colorStr = (color && color !== '-') ? ` ${color}` : '';
-            const sizeStr = (size && size !== '-') ? `${size}` : '';
-            const fullName = `${itemName}${colorStr}${sizeStr}`.trim();
-
-            let existing = inventory.find(i => i.name.toLowerCase() === fullName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
-            if (existing) {
-                existing.qty = Math.max(0, existing.qty + deltaQty);
-            } else if (deltaQty > 0) {
-                inventory.unshift({
-                    id: Date.now() + Math.random(),
-                    name: fullName,
-                    qty: deltaQty
-                });
+        function importShippingToInventory() {
+            let shippingItems = orders.filter(o => o.status === '工作室');
+            if (shippingItems.length === 0) {
+                alert('目前沒有狀態為「工作室」的商品可以匯入！');
+                return;
             }
-            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
+
+            shippingItems.forEach(s => {
+                const colorStr = (s.color && s.color !== '-') ? ` ${s.color}` : '';
+                const sizeStr = (s.size && s.size !== '-') ? ` ${s.size}` : '';
+                const fullName = `[${s.booth}] ${s.item}${colorStr}${sizeStr}`.trim();
+
+                let existing = inventory.find(i => i.name.toLowerCase() === fullName.toLowerCase());
+                if (existing) {
+                    existing.qty += s.qty;
+                } else {
+                    inventory.unshift({
+                        id: Date.now() + Math.random(),
+                        name: fullName,
+                        qty: s.qty
+                    });
+                }
+            });
+
+            saveAndRenderInventory();
+            alert('成功將工作室商品匯入庫存！');
         }
 
         function addOrder(e) {
@@ -514,11 +529,6 @@
                         status,
                         note: ''
                     });
-                }
-
-                // 若新增時直接選「工作室」，自動幫庫存表增加數量
-                if (status === '工作室') {
-                    syncOrderToInventory(item, cColor, cSize, cQty);
                 }
             }
 
@@ -589,19 +599,6 @@
         function updateOrderField(id, field, value) {
             const order = orders.find(o => o.id === id);
             if (order) {
-                // 如果修改的是「狀態」，自動連動增減庫存表
-                if (field === 'status') {
-                    const oldStatus = order.status;
-                    const newStatus = value;
-                    if (oldStatus !== '工作室' && newStatus === '工作室') {
-                        // 變成「工作室」：庫存增加
-                        syncOrderToInventory(order.item, order.color, order.size, order.qty);
-                    } else if (oldStatus === '工作室' && newStatus === '已回台') {
-                        // 從「工作室」變成「已回台」：庫存減少
-                        syncOrderToInventory(order.item, order.color, order.size, -order.qty);
-                    }
-                }
-
                 if (field === 'qty' || field === 'price') {
                     order[field] = parseFloat(value) || 0;
                 } else {
@@ -614,12 +611,9 @@
             }
         }
 
-        // 在「韓國工作室」分頁點「✈️ 回台 -1」自動拆 1 件去「已回台」並扣 1 件庫存
         function splitOneToArrived(id) {
             const target = orders.find(o => o.id === id);
             if (!target) return;
-
-            syncOrderToInventory(target.item, target.color, target.size, -1);
 
             if (target.qty > 1) {
                 target.qty -= 1;
@@ -842,7 +836,6 @@
             });
         }
 
-        // 庫存管理：直接顯示與操作 shop_inventory，同時與訂貨表狀態連動
         function addInventory(e) {
             e.preventDefault();
             const nameVal = document.getElementById('invName').value.trim();
@@ -883,8 +876,6 @@
         function renderInventory() {
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
-
-            // 結合手動庫存 (shop_inventory) 與目前訂貨表中狀態為「工作室」但還沒寫入庫存表的項目
             let totalPieces = 0;
 
             if (inventory.length === 0) {
