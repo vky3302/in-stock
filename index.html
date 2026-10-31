@@ -28,6 +28,7 @@
 <body class="text-slate-800">
 
     <div class="max-w-7xl mx-auto p-4 md:p-6">
+        
         <!-- 標題 -->
         <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
@@ -100,23 +101,11 @@
                         </div>
                     </div>
 
-                    <!-- 多色快速輸入模式 (預設隱藏) -->
-                    <div id="multiColorBox" class="hidden space-y-3 pt-3 border-t border-[#EFECE6]">
-                        <p class="text-xs text-slate-500 font-medium">💡 同一商品快速填寫多個顏色與尺寸：</p>
-                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
-                            <div><input type="text" id="mColor1" placeholder="顏色1 (例: 白)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="text" id="mSize1" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="number" id="mQty1" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
-                            <div><input type="text" id="mColor2" placeholder="顏色2 (例: 黑)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="text" id="mSize2" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="number" id="mQty2" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-2 bg-[#F9F7F2] p-2 rounded-lg">
-                            <div><input type="text" id="mColor3" placeholder="顏色3 (例: 灰)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="text" id="mSize3" placeholder="尺寸 (例: F)" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
-                            <div><input type="number" id="mQty3" min="1" value="1" placeholder="數量" class="milk-input w-full border rounded px-2 py-1 text-xs"></div>
+                    <!-- 多色快速輸入模式 (預設隱藏) - 改為單一輸入框用逗號自動拆單 -->
+                    <div id="multiColorBox" class="hidden space-y-2 pt-2 border-t border-[#EFECE6]">
+                        <p class="text-xs text-slate-500 font-medium leading-relaxed">💡 請用逗號分隔顏色與數量：<br><span class="text-[#5D728A] font-bold">灰20,白20</span> 或 <span class="text-[#5D728A] font-bold">灰F20,白F20</span></p>
+                        <div>
+                            <input type="text" id="multiColorInput" placeholder="例如：灰20,白20 或 灰F20,白F20" class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
                         </div>
                     </div>
 
@@ -145,6 +134,7 @@
                         </select>
                     </div>
                 </div>
+
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -167,6 +157,7 @@
                         </tbody>
                     </table>
                 </div>
+
                 <div class="p-4 bg-[#FBF9F5] border-t border-[#EFECE6] flex justify-end items-center gap-6 text-sm">
                     <span class="font-medium text-slate-600">目前清單總花費：</span>
                     <span id="totalCostSum" class="text-lg font-bold" style="color: #5D728A;">0</span>
@@ -288,7 +279,6 @@
                     </div>
                 </form>
             </div>
-
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6]">
                     <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 現有庫存清單</h2>
@@ -331,7 +321,6 @@
                     </div>
                 </form>
             </div>
-
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
                     <h2 class="text-lg font-semibold" style="color: #5A4F46;">🛩️ 已寄出包裹清單與總公斤數</h2>
@@ -352,12 +341,12 @@
                 </div>
             </div>
         </section>
+
     </div>
 
-    <!-- JavaScript 雲端同步邏輯 -->
+    <!-- JavaScript 雲端同步與多色自動拆單邏輯 -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
-
         let orders = [];
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
@@ -367,11 +356,9 @@
         document.getElementById('orderDate').valueAsDate = new Date();
         document.getElementById('parcelDate').valueAsDate = new Date();
 
-        // 頁面載入時從 Google 試算表抓取資料
         function loadDataFromCloud() {
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerText = '🔄 正在從雲端同步資料...';
-            
             fetch(SCRIPT_URL + "?action=getOrders")
                 .then(response => response.json())
                 .then(data => {
@@ -398,11 +385,9 @@
                 });
         }
 
-        // 將資料同步寫入 Google 試算表
         function syncToCloud() {
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerText = '☁️ 正在上傳至雲端...';
-
             fetch(SCRIPT_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -415,8 +400,6 @@
                 console.error('Error saving data:', error);
                 statusEl.innerText = '❌ 雲端同步失敗';
             });
-
-            // 同時備份至 LocalStorage 當作離線備份
             localStorage.setItem('shop_orders', JSON.stringify(orders));
         }
 
@@ -427,7 +410,6 @@
                 btn.className = 'px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition';
                 btn.style.backgroundColor = '';
             });
-
             document.getElementById('tab-' + tabName).classList.remove('hidden');
             const activeBtn = document.getElementById('btn-' + tabName);
             activeBtn.className = 'px-4 py-2 text-white rounded-lg text-sm font-medium shadow-sm transition';
@@ -459,7 +441,6 @@
             const sBox = document.getElementById('singleColorBox');
             const mBox = document.getElementById('multiColorBox');
             const btn = document.getElementById('multiColorBtn');
-
             if (isMultiColorMode) {
                 sBox.classList.add('hidden');
                 mBox.classList.remove('hidden');
@@ -473,33 +454,70 @@
             }
         }
 
+        // 新增訂單（支援多色輸入模式自動用逗號拆單，例如：灰20,白20 或 灰F20,白F20）
         function addOrder(e) {
             e.preventDefault();
             const date = document.getElementById('orderDate').value;
-            const booth = document.getElementById('boothName').value;
-            const item = document.getElementById('itemName').value;
+            const booth = document.getElementById('boothName').value.trim();
+            const item = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
             const status = document.getElementById('itemStatus').value;
 
             if (isMultiColorMode) {
-                let addedCount = 0;
-                for (let i = 1; i <= 3; i++) {
-                    const color = document.getElementById(`mColor${i}`).value.trim();
-                    const size = document.getElementById(`mSize${i}`).value.trim() || '-';
-                    const qty = parseInt(document.getElementById(`mQty${i}`).value) || 1;
-
-                    if (color !== '') {
-                        orders.unshift({
-                            id: Date.now() + i,
-                            date, booth, item, color, size, qty, price, status, note: ''
-                        });
-                        addedCount++;
-                    }
-                }
-                if (addedCount === 0) {
-                    alert('請至少填寫一個顏色！');
+                const rawText = document.getElementById('multiColorInput').value.trim();
+                if (!rawText) {
+                    alert('請輸入顏色與數量！');
                     return;
                 }
+
+                // 以逗號分隔每個項目（支援全形與半形逗號）
+                const entries = rawText.split(/[,，]/);
+                let addedCount = 0;
+
+                entries.forEach((entry, index) => {
+                    const cleanEntry = entry.trim();
+                    if (!cleanEntry) return;
+
+                    // 智慧解析：抓取結尾數字作為數量，前面拆解顏色與尺寸
+                    const match = cleanEntry.match(/^(.+?)(\d+)$/);
+                    let color = cleanEntry;
+                    let size = '-';
+                    let qty = 1;
+
+                    if (match) {
+                        let prefix = match[1].trim();
+                        qty = parseInt(match[2], 10) || 1;
+
+                        // 檢查結尾是否有尺寸代號（如 F, S, M, L 等）
+                        const sizeMatch = prefix.match(/^(.*?)([FfSsMmLl尺寸]$)$/);
+                        if (sizeMatch) {
+                            color = sizeMatch[1].trim();
+                            size = sizeMatch[2].toUpperCase();
+                        } else {
+                            color = prefix;
+                        }
+                    }
+
+                    orders.unshift({
+                        id: Date.now() + index,
+                        date,
+                        booth,
+                        item,
+                        color: color || '-',
+                        size: size || '-',
+                        qty,
+                        price,
+                        status,
+                        note: ''
+                    });
+                    addedCount++;
+                });
+
+                if (addedCount === 0) {
+                    alert('格式似乎有誤，請確認後重新輸入！');
+                    return;
+                }
+
             } else {
                 orders.unshift({
                     id: Date.now(),
@@ -508,7 +526,7 @@
                     item,
                     color: document.getElementById('itemColor').value.trim() || '-',
                     size: document.getElementById('itemSize').value.trim() || '-',
-                    qty: parseInt(document.getElementById('itemQty').value),
+                    qty: parseInt(document.getElementById('itemQty').value) || 1,
                     price,
                     status,
                     note: ''
@@ -519,6 +537,10 @@
             renderOrders();
             document.getElementById('orderForm').reset();
             document.getElementById('orderDate').valueAsDate = new Date();
+            if (isMultiColorMode) {
+                document.getElementById('modeToggle').checked = false;
+                toggleMultiColor();
+            }
         }
 
         function deleteOrder(id) {
@@ -546,14 +568,10 @@
             const tbody = document.getElementById('orderTableBody');
             const search = document.getElementById('searchOrder').value.toLowerCase();
             const filter = document.getElementById('filterStatus').value;
-
             tbody.innerHTML = '';
+
             let filtered = orders.filter(o => {
-                const matchSearch = o.booth.toLowerCase().includes(search) || 
-                                    o.item.toLowerCase().includes(search) || 
-                                    o.color.toLowerCase().includes(search) || 
-                                    o.size.toLowerCase().includes(search) || 
-                                    (o.note && o.note.toLowerCase().includes(search));
+                const matchSearch = o.booth.toLowerCase().includes(search) || o.item.toLowerCase().includes(search) || o.color.toLowerCase().includes(search) || o.size.toLowerCase().includes(search) || (o.note && o.note.toLowerCase().includes(search));
                 const matchFilter = filter === '' || o.status === filter;
                 return matchSearch && matchFilter;
             });
@@ -573,7 +591,6 @@
             filtered.forEach(o => {
                 const totalCost = o.qty * o.price;
                 totalSum += totalCost;
-
                 let badgeColor = 'bg-slate-100 text-slate-800';
                 if (o.status === '待訂') badgeColor = 'bg-[#FAF3E9] text-[#A67C52]';
                 if (o.status === '已訂') badgeColor = 'bg-[#EAF0F6] text-[#5D728A]';
@@ -611,12 +628,10 @@
             const items = orders.filter(o => o.status === '待訂');
             document.getElementById('pendingCount').innerText = `共 ${items.length} 項`;
             tbody.innerHTML = '';
-
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有處於「待訂」的商品</td></tr>`;
                 return;
             }
-
             items.forEach(o => {
                 const totalCost = o.qty * o.price;
                 tbody.innerHTML += `
@@ -647,12 +662,10 @@
             const items = orders.filter(o => o.status === '工作室');
             document.getElementById('shippingCount').innerText = `共 ${items.length} 項`;
             tbody.innerHTML = '';
-
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有處於「工作室」的商品</td></tr>`;
                 return;
             }
-
             items.forEach(o => {
                 const totalCost = o.qty * o.price;
                 tbody.innerHTML += `
@@ -683,12 +696,10 @@
             const items = orders.filter(o => o.status === '已回台');
             document.getElementById('arrivedCount').innerText = `共 ${items.length} 項`;
             tbody.innerHTML = '';
-
             if (items.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有處於「已回台」的商品</td></tr>`;
                 return;
             }
-
             items.forEach(o => {
                 const totalCost = o.qty * o.price;
                 tbody.innerHTML += `
@@ -808,7 +819,6 @@
             document.getElementById('totalParcelKg').innerText = `總計 ${totalKg.toFixed(1)} KG`;
         }
 
-        // 啟動時先從雲端讀取資料
         loadDataFromCloud();
     </script>
 </body>
