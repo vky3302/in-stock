@@ -59,8 +59,8 @@
                     <!-- 基本共用欄位 -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-3">
                         <div>
-                            <label class="block text-xs font-medium text-slate-500 mb-1">日期</label>
-                            <input type="date" id="orderDate" required class="milk-input w-full border rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#5D728A]">
+                            <label class="block text-xs font-medium text-slate-500 mb-1">日期 (自動帶入)</label>
+                            <input type="date" id="orderDate" readonly class="w-full border border-[#E2DBD0] rounded-lg px-2.5 py-2 text-sm bg-slate-100 text-slate-500 cursor-not-allowed focus:outline-none">
                         </div>
                         <div>
                             <label class="block text-xs font-medium text-slate-500 mb-1">檔口名稱</label>
@@ -101,7 +101,7 @@
                         </div>
                     </div>
 
-                    <!-- 多色快速輸入模式 (預設隱藏) - 改為單一輸入框用逗號自動拆單 -->
+                    <!-- 多色快速輸入模式 (預設隱藏) -->
                     <div id="multiColorBox" class="hidden space-y-2 pt-2 border-t border-[#EFECE6]">
                         <p class="text-xs text-slate-500 font-medium leading-relaxed">💡 請用逗號分隔顏色與數量：<br><span class="text-[#5D728A] font-bold">灰20,白20</span> 或 <span class="text-[#5D728A] font-bold">灰F20,白F20</span></p>
                         <div>
@@ -305,8 +305,8 @@
                 <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增寄回台灣包裹記錄</h2>
                 <form id="parcelForm" onsubmit="addParcel(event)" class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">寄出日期</label>
-                        <input type="date" id="parcelDate" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                        <label class="block text-xs font-medium text-slate-500 mb-1">寄出日期 (自動帶入)</label>
+                        <input type="date" id="parcelDate" readonly class="w-full border border-[#E2DBD0] rounded-lg px-3 py-2 text-sm bg-slate-100 text-slate-500 cursor-not-allowed focus:outline-none">
                     </div>
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-1">包裹重量 (公斤 / KG)</label>
