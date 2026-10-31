@@ -40,7 +40,7 @@
                 <button onclick="switchTab('pending')" id="btn-pending" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">待訂商品</button>
                 <button onclick="switchTab('shipping')" id="btn-shipping" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國工作室</button>
                 <button onclick="switchTab('arrived')" id="btn-arrived" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">已回台商品</button>
-                <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國工作室庫存</button>
+                <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">庫存管理</button>
                 <button onclick="switchTab('parcels')" id="btn-parcels" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">寄出包裹記錄</button>
             </div>
         </header>
@@ -199,7 +199,7 @@
         <section id="tab-shipping" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室清單</h2>
-                <p class="text-sm text-slate-500">此處專門顯示目前在韓國工作室、等待打包寄回台灣的品項。</p>
+                <p class="text-sm text-slate-500">此處專門顯示目前在韓國工作室、等待打包寄回台灣的品項。若只寄回 1 件，可點右側「✈️ 回台 -1」自動拆單！</p>
             </div>
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
@@ -218,7 +218,7 @@
                                 <th class="p-3">數量</th>
                                 <th class="p-3">總花費</th>
                                 <th class="p-3">備註</th>
-                                <th class="p-3 text-right">狀態切換</th>
+                                <th class="p-3 text-right">快速拆單 / 狀態切換</th>
                             </tr>
                         </thead>
                         <tbody id="shippingTableBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
@@ -231,7 +231,7 @@
         <section id="tab-arrived" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🛬 已回台商品清單</h2>
-                <p class="text-sm text-slate-500">此處專門顯示已經抵達台灣的品項。收到貨的小幫手或家人可以直接在前方「點收確認」打勾，狀態會即時同步至雲端！</p>
+                <p class="text-sm text-slate-500">此處專門顯示已經抵達台灣的品項。收到貨的小幫手或家人可以直接在前方「點收確認」打勾！</p>
             </div>
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
@@ -260,51 +260,41 @@
             </div>
         </section>
 
-        <!-- 頁籤 5：韓國工作室庫存管理 -->
+        <!-- 頁籤 5：庫存管理 (100% 還原原本的手動庫存表在最上方，並支援連動訂貨表) -->
         <section id="tab-inventory" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
-                <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室現貨庫存（連動訂貨表）</h2>
-                <p class="text-sm text-slate-500">自動匯總「訂貨與檔口管理」中狀態為 <b>工作室</b> 的商品。若部分商品回台（售出），可直接點擊右側「回台 -1」，系統會自動將 1 件拆分至「已回台」並扣減此處庫存！</p>
+                <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增庫存商品</h2>
+                <form id="inventoryForm" onsubmit="addInventory(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱/型號</label>
+                        <input type="text" id="invName" placeholder="例如：喇叭褲 黑S" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-500 mb-1">現有庫存數量</label>
+                        <input type="number" id="invQty" value="1" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增庫存</button>
+                    </div>
+                </form>
             </div>
+
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
-                <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
-                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 工作室現貨統計</h2>
-                    <span id="totalInvCount" class="text-xs bg-[#EAF0F6] text-[#5D728A] px-2.5 py-1 rounded-full font-medium">共 0 件現貨</span>
+                <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center flex-wrap gap-2">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 現有庫存清單</h2>
+                    <span id="totalInvCount" class="text-xs bg-[#EAF0F6] text-[#5D728A] px-2.5 py-1 rounded-full font-medium">共 0 件</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-[#F9F7F2] text-slate-600 text-xs uppercase tracking-wider">
-                                <th class="p-3">檔口</th>
-                                <th class="p-3">商品名稱</th>
-                                <th class="p-3">顏色</th>
-                                <th class="p-3">尺寸</th>
-                                <th class="p-3 font-bold text-[#5D728A]">工作室現貨數量</th>
-                                <th class="p-3 text-right">快速出貨 / 回台</th>
+                                <th class="p-3">商品名稱 / 顏色尺寸</th>
+                                <th class="p-3">庫存數量</th>
+                                <th class="p-3 text-right">快速調整</th>
+                                <th class="p-3 text-right">操作</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- 舊版手動新增庫存區塊（保留給原本獨立紀錄的資料） -->
-            <div class="milk-card p-4 rounded-xl shadow-sm border mt-6">
-                <h2 class="text-base font-semibold mb-3" style="color: #5A4F46;">📦 獨立手動庫存表（保留您先前手動輸入的庫存資料）</h2>
-                <form id="inventoryForm" onsubmit="addManualInventory(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
-                    <div>
-                        <input type="text" id="invName" placeholder="手動新增商品名稱/型號..." required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <input type="number" id="invQty" value="1" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <button type="submit" class="w-full text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">手動新增</button>
-                    </div>
-                </form>
-                <div class="overflow-x-auto border-t border-[#EFECE6]">
-                    <table class="w-full text-left border-collapse">
-                        <tbody id="manualInventoryBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -358,7 +348,7 @@
     <!-- JavaScript 完整邏輯 -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
-        let orders = [];
+        let orders = JSON.parse(localStorage.getItem('shop_orders')) || [];
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
@@ -367,37 +357,42 @@
         document.getElementById('orderDate').valueAsDate = new Date();
         document.getElementById('parcelDate').valueAsDate = new Date();
 
+        // 先渲染本地快取資料，確保畫面一打開就有東西
+        renderOrders();
+
         function loadDataFromCloud() {
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerText = '🔄 正在從雲端同步資料...';
             fetch(SCRIPT_URL + "?action=getOrders")
                 .then(response => response.json())
                 .then(data => {
-                    orders = data.map(item => ({
-                        id: Number(item.id) || Date.now() + Math.random(),
-                        date: item.date ? item.date.split('T')[0] : '',
-                        booth: String(item.booth || ''),
-                        item: String(item.item || ''),
-                        color: String(item.color || '-'),
-                        size: String(item.size || '-'),
-                        qty: Number(item.qty) || 1,
-                        price: Number(item.price) || 0,
-                        status: item.status || '待訂',
-                        note: String(item.note || '')
-                    }));
-                    localStorage.setItem('shop_orders', JSON.stringify(orders));
+                    if (Array.isArray(data) && data.length > 0) {
+                        orders = data.map(item => ({
+                            id: Number(item.id) || Date.now() + Math.random(),
+                            date: item.date ? String(item.date).split('T')[0] : '',
+                            booth: String(item.booth || ''),
+                            item: String(item.item || ''),
+                            color: String(item.color || '-'),
+                            size: String(item.size || '-'),
+                            qty: Number(item.qty) || 1,
+                            price: Number(item.price) || 0,
+                            status: item.status || '待訂',
+                            note: String(item.note || '')
+                        }));
+                        localStorage.setItem('shop_orders', JSON.stringify(orders));
+                    }
                     statusEl.innerText = '✅ 雲端同步成功 (已連線 Google 試算表)';
                     renderOrders();
                 })
                 .catch(error => {
                     console.error('Error loading data:', error);
                     statusEl.innerText = '⚠️ 雲端連線失敗，目前顯示離線快取';
-                    orders = JSON.parse(localStorage.getItem('shop_orders')) || [];
                     renderOrders();
                 });
         }
 
         function syncToCloud() {
+            localStorage.setItem('shop_orders', JSON.stringify(orders));
             const statusEl = document.getElementById('syncStatus');
             statusEl.innerText = '☁️ 正在上傳至雲端...';
             fetch(SCRIPT_URL, {
@@ -412,7 +407,6 @@
                 console.error('Error saving data:', error);
                 statusEl.innerText = '❌ 雲端同步失敗';
             });
-            localStorage.setItem('shop_orders', JSON.stringify(orders));
         }
 
         function switchTab(tabName) {
@@ -466,6 +460,26 @@
             }
         }
 
+        // 當訂單狀態改變時，同步調整庫存頁面的數量（到工作室+，改回台-）
+        function syncOrderToInventory(itemName, color, size, deltaQty) {
+            if (deltaQty === 0) return;
+            const colorStr = (color && color !== '-') ? ` ${color}` : '';
+            const sizeStr = (size && size !== '-') ? `${size}` : '';
+            const fullName = `${itemName}${colorStr}${sizeStr}`.trim();
+
+            let existing = inventory.find(i => i.name.toLowerCase() === fullName.toLowerCase() || i.name.toLowerCase() === itemName.toLowerCase());
+            if (existing) {
+                existing.qty = Math.max(0, existing.qty + deltaQty);
+            } else if (deltaQty > 0) {
+                inventory.unshift({
+                    id: Date.now() + Math.random(),
+                    name: fullName,
+                    qty: deltaQty
+                });
+            }
+            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
+        }
+
         function addOrder(e) {
             e.preventDefault();
             const date = document.getElementById('orderDate').value;
@@ -500,6 +514,11 @@
                         status,
                         note: ''
                     });
+                }
+
+                // 若新增時直接選「工作室」，自動幫庫存表增加數量
+                if (status === '工作室') {
+                    syncOrderToInventory(item, cColor, cSize, cQty);
                 }
             }
 
@@ -570,6 +589,19 @@
         function updateOrderField(id, field, value) {
             const order = orders.find(o => o.id === id);
             if (order) {
+                // 如果修改的是「狀態」，自動連動增減庫存表
+                if (field === 'status') {
+                    const oldStatus = order.status;
+                    const newStatus = value;
+                    if (oldStatus !== '工作室' && newStatus === '工作室') {
+                        // 變成「工作室」：庫存增加
+                        syncOrderToInventory(order.item, order.color, order.size, order.qty);
+                    } else if (oldStatus === '工作室' && newStatus === '已回台') {
+                        // 從「工作室」變成「已回台」：庫存減少
+                        syncOrderToInventory(order.item, order.color, order.size, -order.qty);
+                    }
+                }
+
                 if (field === 'qty' || field === 'price') {
                     order[field] = parseFloat(value) || 0;
                 } else {
@@ -582,7 +614,48 @@
             }
         }
 
-        // 切換「已回台商品」的點收打勾狀態（自動寫入備註以同步雲端試算表）
+        // 在「韓國工作室」分頁點「✈️ 回台 -1」自動拆 1 件去「已回台」並扣 1 件庫存
+        function splitOneToArrived(id) {
+            const target = orders.find(o => o.id === id);
+            if (!target) return;
+
+            syncOrderToInventory(target.item, target.color, target.size, -1);
+
+            if (target.qty > 1) {
+                target.qty -= 1;
+            } else {
+                orders = orders.filter(o => o.id !== id);
+            }
+
+            const existingArrived = orders.find(o => 
+                o.status === '已回台' &&
+                String(o.booth).toLowerCase() === String(target.booth).toLowerCase() &&
+                String(o.item).toLowerCase() === String(target.item).toLowerCase() &&
+                String(o.color).toLowerCase() === String(target.color).toLowerCase() &&
+                String(o.size).toLowerCase() === String(target.size).toLowerCase()
+            );
+
+            if (existingArrived) {
+                existingArrived.qty += 1;
+            } else {
+                orders.unshift({
+                    id: Date.now() + Math.random(),
+                    date: target.date,
+                    booth: target.booth,
+                    item: target.item,
+                    color: target.color,
+                    size: target.size,
+                    qty: 1,
+                    price: target.price,
+                    status: '已回台',
+                    note: target.note
+                });
+            }
+
+            syncToCloud();
+            renderShipping();
+        }
+
         function toggleArrivedCheck(id, isChecked) {
             const order = orders.find(o => o.id === id);
             if (!order) return;
@@ -707,13 +780,16 @@
                         <td class="p-3 text-slate-800 font-medium">${o.item}</td>
                         <td class="p-3 text-slate-600">${o.color}</td>
                         <td class="p-3 text-slate-600">${o.size}</td>
-                        <td class="p-3 text-slate-600">${o.qty}</td>
+                        <td class="p-3 text-slate-600 font-bold">${o.qty}</td>
                         <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
                         <td class="p-3 text-slate-600 text-xs">${o.note || '-'}</td>
-                        <td class="p-3 text-right">
+                        <td class="p-3 text-right space-x-1">
+                            <button onclick="splitOneToArrived(${o.id})" class="bg-[#EAF5EF] hover:bg-[#D5EBE0] text-[#4A7C59] px-2.5 py-1 rounded text-xs font-semibold transition">
+                                ✈️ 回台 -1
+                            </button>
                             <select onchange="updateOrderField(${o.id}, 'status', this.value); renderShipping();" class="text-xs border border-[#E2DBD0] rounded px-2 py-1 focus:outline-none bg-[#F2ECF5] text-[#7A5885] font-semibold">
                                 <option value="工作室" selected>工作室</option>
-                                <option value="已回台">改為 已回台</option>
+                                <option value="已回台">全部改 已回台</option>
                                 <option value="已訂">改回 已訂</option>
                                 <option value="待訂">改回 待訂</option>
                             </select>
@@ -766,49 +842,41 @@
             });
         }
 
-        function moveOneToArrived(booth, item, color, size) {
-            const target = orders.find(o => 
-                o.status === '工作室' &&
-                String(o.booth).toLowerCase() === booth.toLowerCase() &&
-                String(o.item).toLowerCase() === item.toLowerCase() &&
-                String(o.color).toLowerCase() === color.toLowerCase() &&
-                String(o.size).toLowerCase() === size.toLowerCase()
-            );
-
-            if (!target) return;
-
-            if (target.qty > 1) {
-                target.qty -= 1;
+        // 庫存管理：直接顯示與操作 shop_inventory，同時與訂貨表狀態連動
+        function addInventory(e) {
+            e.preventDefault();
+            const nameVal = document.getElementById('invName').value.trim();
+            const qtyVal = parseInt(document.getElementById('invQty').value) || 0;
+            
+            const existing = inventory.find(i => i.name.toLowerCase() === nameVal.toLowerCase());
+            if (existing) {
+                existing.qty += qtyVal;
             } else {
-                orders = orders.filter(o => o.id !== target.id);
-            }
-
-            const existingArrived = orders.find(o => 
-                o.status === '已回台' &&
-                String(o.booth).toLowerCase() === booth.toLowerCase() &&
-                String(o.item).toLowerCase() === item.toLowerCase() &&
-                String(o.color).toLowerCase() === color.toLowerCase() &&
-                String(o.size).toLowerCase() === size.toLowerCase()
-            );
-
-            if (existingArrived) {
-                existingArrived.qty += 1;
-            } else {
-                orders.unshift({
-                    id: Date.now() + Math.random(),
-                    date: target.date,
-                    booth: target.booth,
-                    item: target.item,
-                    color: target.color,
-                    size: target.size,
-                    qty: 1,
-                    price: target.price,
-                    status: '已回台',
-                    note: target.note
+                inventory.unshift({
+                    id: Date.now(),
+                    name: nameVal,
+                    qty: qtyVal
                 });
             }
+            saveAndRenderInventory();
+            document.getElementById('inventoryForm').reset();
+        }
 
-            syncToCloud();
+        function adjustQty(id, amount) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                item.qty = Math.max(0, item.qty + amount);
+                saveAndRenderInventory();
+            }
+        }
+
+        function deleteInventory(id) {
+            inventory = inventory.filter(i => i.id !== id);
+            saveAndRenderInventory();
+        }
+
+        function saveAndRenderInventory() {
+            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
             renderInventory();
         }
 
@@ -816,101 +884,30 @@
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
 
-            let invMap = {};
+            // 結合手動庫存 (shop_inventory) 與目前訂貨表中狀態為「工作室」但還沒寫入庫存表的項目
+            let totalPieces = 0;
 
-            orders.forEach(o => {
-                if (o.status !== '工作室') return;
-
-                const key = `${String(o.booth).toLowerCase()}_${String(o.item).toLowerCase()}_${String(o.color).toLowerCase()}_${String(o.size).toLowerCase()}`;
-                if (!invMap[key]) {
-                    invMap[key] = {
-                        booth: o.booth,
-                        item: o.item,
-                        color: o.color,
-                        size: o.size,
-                        qty: 0
-                    };
-                }
-                invMap[key].qty += o.qty;
-            });
-
-            let invList = Object.values(invMap).filter(i => i.qty > 0);
-            document.getElementById('totalInvCount').innerText = `共 ${invList.reduce((sum, i) => sum + i.qty, 0)} 件現貨`;
-
-            if (invList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">目前沒有狀態為「工作室」的現貨商品</td></tr>`;
-            } else {
-                invList.forEach(i => {
-                    tbody.innerHTML += `
-                        <tr class="hover:bg-[#F9F7F2] transition">
-                            <td class="p-3 font-medium text-slate-900">${i.booth}</td>
-                            <td class="p-3 text-slate-800 font-medium">${i.item}</td>
-                            <td class="p-3 text-slate-600">${i.color}</td>
-                            <td class="p-3 text-slate-600">${i.size}</td>
-                            <td class="p-3 font-bold text-base" style="color: #5D728A;">${i.qty} 件</td>
-                            <td class="p-3 text-right">
-                                <button onclick="moveOneToArrived('${i.booth.replace(/'/g, "\\'")}', '${i.item.replace(/'/g, "\\'")}', '${i.color.replace(/'/g, "\\'")}', '${i.size.replace(/'/g, "\\'")}')" class="bg-[#EAF5EF] hover:bg-[#D5EBE0] text-[#4A7C59] px-3 py-1 rounded-lg text-xs font-semibold transition">
-                                    ✈️ 回台 -1
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            renderManualInventory();
-        }
-
-        function addManualInventory(e) {
-            e.preventDefault();
-            inventory.unshift({
-                id: Date.now(),
-                name: document.getElementById('invName').value,
-                qty: parseInt(document.getElementById('invQty').value) || 0
-            });
-            saveAndRenderManualInventory();
-            document.getElementById('inventoryForm').reset();
-        }
-
-        function adjustManualQty(id, amount) {
-            const item = inventory.find(i => i.id === id);
-            if (item) {
-                item.qty = Math.max(0, item.qty + amount);
-                saveAndRenderManualInventory();
-            }
-        }
-
-        function deleteManualInventory(id) {
-            inventory = inventory.filter(i => i.id !== id);
-            saveAndRenderManualInventory();
-        }
-
-        function saveAndRenderManualInventory() {
-            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
-            renderManualInventory();
-        }
-
-        function renderManualInventory() {
-            const tbody = document.getElementById('manualInventoryBody');
-            if (!tbody) return;
-            tbody.innerHTML = '';
             if (inventory.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">無額外手動庫存記錄</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">目前沒有庫存記錄</td></tr>`;
+                document.getElementById('totalInvCount').innerText = `共 0 件`;
                 return;
             }
+
             inventory.forEach(i => {
+                totalPieces += i.qty;
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
                         <td class="p-3 font-medium text-slate-900">${i.name}</td>
-                        <td class="p-3 text-slate-800 font-bold">${i.qty} 件</td>
+                        <td class="p-3 text-slate-800 font-bold text-base" style="color: #5D728A;">${i.qty}</td>
                         <td class="p-3 text-right space-x-1">
-                            <button onclick="adjustManualQty(${i.id}, -1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">-1</button>
-                            <button onclick="adjustManualQty(${i.id}, 1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">+1</button>
+                            <button onclick="adjustQty(${i.id}, -1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2.5 py-1 rounded text-xs font-bold">-1</button>
+                            <button onclick="adjustQty(${i.id}, 1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2.5 py-1 rounded text-xs font-bold">+1</button>
                         </td>
-                        <td class="p-3 text-right"><button onclick="deleteManualInventory(${i.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button></td>
+                        <td class="p-3 text-right"><button onclick="deleteInventory(${i.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button></td>
                     </tr>
                 `;
             });
+            document.getElementById('totalInvCount').innerText = `共 ${totalPieces} 件`;
         }
 
         function addParcel(e) {
