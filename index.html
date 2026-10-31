@@ -594,7 +594,7 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-2"><input type="date" value="${o.date}" onchange="updateOrderField(${o.id}, 'date', this.value)" class="milk-input border rounded px-1.5 py-1 text-xs text-slate-700 focus:outline-none"></td>
+                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
                         <td class="p-2"><input type="text" value="${o.booth}" oninput="updateOrderField(${o.id}, 'booth', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-900 w-28 focus:outline-none"></td>
                         <td class="p-2"><input type="text" value="${o.item}" oninput="updateOrderField(${o.id}, 'item', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-800 w-32 focus:outline-none"></td>
                         <td class="p-2"><input type="text" value="${o.color}" oninput="updateOrderField(${o.id}, 'color', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-20 focus:outline-none"></td>
