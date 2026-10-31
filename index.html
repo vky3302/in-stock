@@ -8,7 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #FBF9F5; /* 溫潤柔和的淺奶茶色背景 */
+            background-color: #FBF9F5;
             color: #4A453F;
         }
         .milk-card {
@@ -40,7 +40,7 @@
                 <button onclick="switchTab('pending')" id="btn-pending" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">待訂商品</button>
                 <button onclick="switchTab('shipping')" id="btn-shipping" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國工作室</button>
                 <button onclick="switchTab('arrived')" id="btn-arrived" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">已回台商品</button>
-                <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">庫存管理</button>
+                <button onclick="switchTab('inventory')" id="btn-inventory" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">韓國工作室庫存</button>
                 <button onclick="switchTab('parcels')" id="btn-parcels" class="px-4 py-2 bg-white text-slate-700 border border-[#E2DBD0] rounded-lg text-sm font-medium hover:bg-[#F4F1EA] transition">寄出包裹記錄</button>
             </div>
         </header>
@@ -152,9 +152,7 @@
                                 <th class="p-3 text-right">操作</th>
                             </tr>
                         </thead>
-                        <tbody id="orderTableBody" class="divide-y divide-[#EFECE6] text-sm">
-                            <!-- 動態插入 -->
-                        </tbody>
+                        <tbody id="orderTableBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
                     </table>
                 </div>
 
@@ -261,36 +259,26 @@
             </div>
         </section>
 
-        <!-- 頁籤 5：庫存管理 -->
+        <!-- 頁籤 5：韓國工作室庫存管理 (自動計算) -->
         <section id="tab-inventory" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
-                <h2 class="text-lg font-semibold mb-4" style="color: #5A4F46;">📦 新增庫存商品</h2>
-                <form id="inventoryForm" onsubmit="addInventory(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">商品名稱/型號</label>
-                        <input type="text" id="invName" placeholder="例如：喇叭褲 黑S" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">現有庫存數量</label>
-                        <input type="number" id="invQty" value="0" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
-                    </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">新增庫存</button>
-                    </div>
-                </form>
+                <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室現貨庫存</h2>
+                <p class="text-sm text-slate-500">此處數據會根據「訂貨與檔口管理」頁面自動計算：狀態為 <b>工作室</b> 的數量會增加，狀態變為 <b>已回台</b> 的數量會扣除。</p>
             </div>
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
-                <div class="p-4 border-b border-[#EFECE6]">
-                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 現有庫存清單</h2>
+                <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 工作室庫存清單</h2>
+                    <span id="totalInvCount" class="text-xs bg-[#EAF0F6] text-[#5D728A] px-2.5 py-1 rounded-full font-medium">共 0 件現貨</span>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-[#F9F7F2] text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
-                                <th class="p-3">庫存數量</th>
-                                <th class="p-3 text-right">快速調整</th>
-                                <th class="p-3 text-right">操作</th>
+                                <th class="p-3">顏色</th>
+                                <th class="p-3">尺寸</th>
+                                <th class="p-3 font-bold text-[#5D728A]">工作室現貨數量</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
@@ -348,7 +336,6 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
         let orders = [];
-        let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
         let isMultiColorMode = false;
@@ -454,6 +441,7 @@
             }
         }
 
+        // 新增訂單（含同品項自動整合加總邏輯）
         function addOrder(e) {
             e.preventDefault();
             const date = document.getElementById('orderDate').value;
@@ -461,6 +449,35 @@
             const item = document.getElementById('itemName').value.trim();
             const price = parseFloat(document.getElementById('itemPrice').value) || 0;
             const status = document.getElementById('itemStatus').value;
+
+            function processAndMerge(cColor, cSize, cQty) {
+                const existingOrder = orders.find(o => 
+                    o.booth.toLowerCase() === booth.toLowerCase() &&
+                    o.item.toLowerCase() === item.toLowerCase() &&
+                    o.color.toLowerCase() === cColor.toLowerCase() &&
+                    o.size.toLowerCase() === cSize.toLowerCase() &&
+                    o.status === status
+                );
+
+                if (existingOrder) {
+                    existingOrder.qty += cQty;
+                    existingOrder.price = price; 
+                    existingOrder.date = date;
+                } else {
+                    orders.unshift({
+                        id: Date.now() + Math.random(),
+                        date,
+                        booth,
+                        item,
+                        color: cColor || '-',
+                        size: cSize || '-',
+                        qty: cQty,
+                        price,
+                        status,
+                        note: ''
+                    });
+                }
+            }
 
             if (isMultiColorMode) {
                 const rawText = document.getElementById('multiColorInput').value.trim();
@@ -472,7 +489,7 @@
                 const entries = rawText.split(/[,，]/);
                 let addedCount = 0;
 
-                entries.forEach((entry, index) => {
+                entries.forEach((entry) => {
                     const cleanEntry = entry.trim();
                     if (!cleanEntry) return;
 
@@ -494,18 +511,7 @@
                         }
                     }
 
-                    orders.unshift({
-                        id: Date.now() + index,
-                        date,
-                        booth,
-                        item,
-                        color: color || '-',
-                        size: size || '-',
-                        qty,
-                        price,
-                        status,
-                        note: ''
-                    });
+                    processAndMerge(color || '-', size || '-', qty);
                     addedCount++;
                 });
 
@@ -515,18 +521,11 @@
                 }
 
             } else {
-                orders.unshift({
-                    id: Date.now(),
-                    date,
-                    booth,
-                    item,
-                    color: document.getElementById('itemColor').value.trim() || '-',
-                    size: document.getElementById('itemSize').value.trim() || '-',
-                    qty: parseInt(document.getElementById('itemQty').value) || 1,
-                    price,
-                    status,
-                    note: ''
-                });
+                const color = document.getElementById('itemColor').value.trim() || '-';
+                const size = document.getElementById('itemSize').value.trim() || '-';
+                const qty = parseInt(document.getElementById('itemQty').value) || 1;
+                
+                processAndMerge(color, size, qty);
             }
 
             syncToCloud();
@@ -720,52 +719,51 @@
             });
         }
 
-        function addInventory(e) {
-            e.preventDefault();
-            inventory.unshift({
-                id: Date.now(),
-                name: document.getElementById('invName').value,
-                qty: parseInt(document.getElementById('invQty').value)
-            });
-            saveAndRenderInventory();
-            document.getElementById('inventoryForm').reset();
-        }
-
-        function adjustQty(id, amount) {
-            const item = inventory.find(i => i.id === id);
-            if (item) {
-                item.qty = Math.max(0, item.qty + amount);
-                saveAndRenderInventory();
-            }
-        }
-
-        function deleteInventory(id) {
-            inventory = inventory.filter(i => i.id !== id);
-            saveAndRenderInventory();
-        }
-
-        function saveAndRenderInventory() {
-            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
-            renderInventory();
-        }
-
+        // 韓國工作室庫存管理：自動依據訂單計算（工作室數量增加，已回台數量扣除）
         function renderInventory() {
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
-            if (inventory.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">目前沒有庫存記錄</td></tr>`;
+
+            let invMap = {};
+
+            orders.forEach(o => {
+                if (o.status !== '工作室' && o.status !== '已回台') return;
+
+                const key = `${o.booth.toLowerCase()}_${o.item.toLowerCase()}_${o.color.toLowerCase()}_${o.size.toLowerCase()}`;
+                if (!invMap[key]) {
+                    invMap[key] = {
+                        booth: o.booth,
+                        item: o.item,
+                        color: o.color,
+                        size: o.size,
+                        qty: 0
+                    };
+                }
+
+                if (o.status === '工作室') {
+                    invMap[key].qty += o.qty;
+                } else if (o.status === '已回台') {
+                    invMap[key].qty -= o.qty;
+                }
+            });
+
+            let invList = Object.values(invMap).filter(i => i.qty > 0);
+
+            document.getElementById('totalInvCount').innerText = `共 ${invList.reduce((sum, i) => sum + i.qty, 0)} 件現貨`;
+
+            if (invList.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">目前韓國工作室沒有剩餘現貨庫存</td></tr>`;
                 return;
             }
-            inventory.forEach(i => {
+
+            invList.forEach(i => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 font-medium text-slate-900">${i.name}</td>
-                        <td class="p-3 text-slate-800 font-bold">${i.qty}</td>
-                        <td class="p-3 text-right space-x-1">
-                            <button onclick="adjustQty(${i.id}, -1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">-1</button>
-                            <button onclick="adjustQty(${i.id}, 1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">+1</button>
-                        </td>
-                        <td class="p-3 text-right"><button onclick="deleteInventory(${i.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button></td>
+                        <td class="p-3 font-medium text-slate-900">${i.booth}</td>
+                        <td class="p-3 text-slate-800 font-medium">${i.item}</td>
+                        <td class="p-3 text-slate-600">${i.color}</td>
+                        <td class="p-3 text-slate-600">${i.size}</td>
+                        <td class="p-3 font-bold text-base" style="color: #5D728A;">${i.qty} 件</td>
                     </tr>
                 `;
             });
