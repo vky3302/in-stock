@@ -359,11 +359,13 @@
         let isSortedByStatus = false;
         let isMultiColorMode = false;
 
+        // 確保表單日期預設為今天
         document.getElementById('orderDate').valueAsDate = new Date();
         document.getElementById('parcelDate').valueAsDate = new Date();
 
         renderOrders();
         renderInventory();
+        loadDataFromCloud();
 
         function loadDataFromCloud() {
             const statusEl = document.getElementById('syncStatus');
@@ -943,8 +945,6 @@
             });
             document.getElementById('totalParcelKg').innerText = `總計 ${totalKg.toFixed(1)} KG`;
         }
-
-        loadDataFromCloud();
     </script>
 </body>
 </html>
