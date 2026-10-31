@@ -231,7 +231,7 @@
         <section id="tab-arrived" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
                 <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🛬 已回台商品清單</h2>
-                <p class="text-sm text-slate-500">此處專門顯示已經安全抵達台灣工作室、準備出貨給客人的現貨品項。</p>
+                <p class="text-sm text-slate-500">此處專門顯示已經抵達台灣的品項。收到貨的小幫手或家人可以直接在前方「點收確認」打勾，狀態會即時同步至雲端！</p>
             </div>
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
@@ -242,6 +242,7 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-[#F9F7F2] text-slate-600 text-xs uppercase tracking-wider">
+                                <th class="p-3 text-center w-20">點收確認</th>
                                 <th class="p-3">日期</th>
                                 <th class="p-3">檔口</th>
                                 <th class="p-3">商品名稱</th>
@@ -259,15 +260,15 @@
             </div>
         </section>
 
-        <!-- 頁籤 5：韓國工作室庫存管理 (自動計算) -->
+        <!-- 頁籤 5：韓國工作室庫存管理 -->
         <section id="tab-inventory" class="hidden space-y-6">
             <div class="milk-card p-4 rounded-xl shadow-sm border">
-                <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室現貨庫存</h2>
-                <p class="text-sm text-slate-500">此處數據會根據「訂貨與檔口管理」頁面自動計算：狀態為 <b>工作室</b> 的數量會增加，狀態變為 <b>已回台</b> 的數量會扣除。</p>
+                <h2 class="text-lg font-semibold mb-1" style="color: #5A4F46;">🏢 韓國工作室現貨庫存（連動訂貨表）</h2>
+                <p class="text-sm text-slate-500">自動匯總「訂貨與檔口管理」中狀態為 <b>工作室</b> 的商品。若部分商品回台（售出），可直接點擊右側「回台 -1」，系統會自動將 1 件拆分至「已回台」並扣減此處庫存！</p>
             </div>
             <div class="milk-card rounded-xl shadow-sm border overflow-hidden">
                 <div class="p-4 border-b border-[#EFECE6] flex justify-between items-center">
-                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 工作室庫存清單</h2>
+                    <h2 class="text-lg font-semibold" style="color: #5A4F46;">📊 工作室現貨統計</h2>
                     <span id="totalInvCount" class="text-xs bg-[#EAF0F6] text-[#5D728A] px-2.5 py-1 rounded-full font-medium">共 0 件現貨</span>
                 </div>
                 <div class="overflow-x-auto">
@@ -279,9 +280,31 @@
                                 <th class="p-3">顏色</th>
                                 <th class="p-3">尺寸</th>
                                 <th class="p-3 font-bold text-[#5D728A]">工作室現貨數量</th>
+                                <th class="p-3 text-right">快速出貨 / 回台</th>
                             </tr>
                         </thead>
                         <tbody id="inventoryTableBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 舊版手動新增庫存區塊（保留給原本獨立紀錄的資料） -->
+            <div class="milk-card p-4 rounded-xl shadow-sm border mt-6">
+                <h2 class="text-base font-semibold mb-3" style="color: #5A4F46;">📦 獨立手動庫存表（保留您先前手動輸入的庫存資料）</h2>
+                <form id="inventoryForm" onsubmit="addManualInventory(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <input type="text" id="invName" placeholder="手動新增商品名稱/型號..." required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <input type="number" id="invQty" value="1" min="0" required class="milk-input w-full border rounded-lg px-3 py-2 text-sm focus:outline-none">
+                    </div>
+                    <div>
+                        <button type="submit" class="w-full text-white font-medium py-2 px-4 rounded-lg text-sm transition shadow-sm" style="background-color: #5D728A;">手動新增</button>
+                    </div>
+                </form>
+                <div class="overflow-x-auto border-t border-[#EFECE6]">
+                    <table class="w-full text-left border-collapse">
+                        <tbody id="manualInventoryBody" class="divide-y divide-[#EFECE6] text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -336,6 +359,7 @@
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
         let orders = [];
+        let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
         let isMultiColorMode = false;
@@ -350,17 +374,18 @@
                 .then(response => response.json())
                 .then(data => {
                     orders = data.map(item => ({
-                        id: Number(item.id) || Date.now(),
+                        id: Number(item.id) || Date.now() + Math.random(),
                         date: item.date ? item.date.split('T')[0] : '',
-                        booth: item.booth || '',
-                        item: item.item || '',
-                        color: item.color || '-',
-                        size: item.size || '-',
+                        booth: String(item.booth || ''),
+                        item: String(item.item || ''),
+                        color: String(item.color || '-'),
+                        size: String(item.size || '-'),
                         qty: Number(item.qty) || 1,
                         price: Number(item.price) || 0,
                         status: item.status || '待訂',
-                        note: item.note || ''
+                        note: String(item.note || '')
                     }));
+                    localStorage.setItem('shop_orders', JSON.stringify(orders));
                     statusEl.innerText = '✅ 雲端同步成功 (已連線 Google 試算表)';
                     renderOrders();
                 })
@@ -441,7 +466,6 @@
             }
         }
 
-        // 新增訂單（含同品項自動整合加總邏輯）
         function addOrder(e) {
             e.preventDefault();
             const date = document.getElementById('orderDate').value;
@@ -452,10 +476,10 @@
 
             function processAndMerge(cColor, cSize, cQty) {
                 const existingOrder = orders.find(o => 
-                    o.booth.toLowerCase() === booth.toLowerCase() &&
-                    o.item.toLowerCase() === item.toLowerCase() &&
-                    o.color.toLowerCase() === cColor.toLowerCase() &&
-                    o.size.toLowerCase() === cSize.toLowerCase() &&
+                    String(o.booth).toLowerCase() === booth.toLowerCase() &&
+                    String(o.item).toLowerCase() === item.toLowerCase() &&
+                    String(o.color).toLowerCase() === cColor.toLowerCase() &&
+                    String(o.size).toLowerCase() === cSize.toLowerCase() &&
                     o.status === status
                 );
 
@@ -558,6 +582,20 @@
             }
         }
 
+        // 切換「已回台商品」的點收打勾狀態（自動寫入備註以同步雲端試算表）
+        function toggleArrivedCheck(id, isChecked) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+            let currentNote = String(order.note || '').replace('[✓已收]', '').trim();
+            if (isChecked) {
+                order.note = currentNote ? `[✓已收] ${currentNote}` : '[✓已收]';
+            } else {
+                order.note = currentNote;
+            }
+            syncToCloud();
+            renderArrived();
+        }
+
         function renderOrders() {
             const tbody = document.getElementById('orderTableBody');
             const search = document.getElementById('searchOrder').value.toLowerCase();
@@ -565,7 +603,7 @@
             tbody.innerHTML = '';
 
             let filtered = orders.filter(o => {
-                const matchSearch = o.booth.toLowerCase().includes(search) || o.item.toLowerCase().includes(search) || o.color.toLowerCase().includes(search) || o.size.toLowerCase().includes(search) || (o.note && o.note.toLowerCase().includes(search));
+                const matchSearch = String(o.booth).toLowerCase().includes(search) || String(o.item).toLowerCase().includes(search) || String(o.color).toLowerCase().includes(search) || String(o.size).toLowerCase().includes(search) || (o.note && String(o.note).toLowerCase().includes(search));
                 const matchFilter = filter === '' || o.status === filter;
                 return matchSearch && matchFilter;
             });
@@ -688,24 +726,33 @@
         function renderArrived() {
             const tbody = document.getElementById('arrivedTableBody');
             const items = orders.filter(o => o.status === '已回台');
-            document.getElementById('arrivedCount').innerText = `共 ${items.length} 項`;
+            const checkedCount = items.filter(o => String(o.note || '').includes('[✓已收]')).length;
+            document.getElementById('arrivedCount').innerText = `共 ${items.length} 項 (已點收 ${checkedCount} 項)`;
             tbody.innerHTML = '';
             if (items.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="9" class="p-4 text-center text-slate-400">目前沒有處於「已回台」的商品</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="10" class="p-4 text-center text-slate-400">目前沒有處於「已回台」的商品</td></tr>`;
                 return;
             }
             items.forEach(o => {
                 const totalCost = o.qty * o.price;
+                const isChecked = String(o.note || '').includes('[✓已收]');
+                const cleanNote = String(o.note || '').replace('[✓已收]', '').trim();
+
                 tbody.innerHTML += `
-                    <tr class="hover:bg-[#F9F7F2] transition">
+                    <tr class="${isChecked ? 'bg-[#F2F8F5] opacity-75' : 'hover:bg-[#F9F7F2]'} transition">
+                        <td class="p-3 text-center">
+                            <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleArrivedCheck(${o.id}, this.checked)" class="w-4 h-4 accent-[#4A7C59] rounded cursor-pointer">
+                        </td>
                         <td class="p-3 text-slate-600 text-xs">${o.date}</td>
-                        <td class="p-3 font-medium text-slate-900">${o.booth}</td>
-                        <td class="p-3 text-slate-800 font-medium">${o.item}</td>
+                        <td class="p-3 font-medium ${isChecked ? 'line-through text-slate-400' : 'text-slate-900'}">${o.booth}</td>
+                        <td class="p-3 font-medium ${isChecked ? 'line-through text-slate-400' : 'text-slate-800'}">${o.item}</td>
                         <td class="p-3 text-slate-600">${o.color}</td>
                         <td class="p-3 text-slate-600">${o.size}</td>
-                        <td class="p-3 text-slate-600">${o.qty}</td>
+                        <td class="p-3 font-bold ${isChecked ? 'text-[#4A7C59]' : 'text-slate-700'}">${o.qty}</td>
                         <td class="p-3 font-semibold" style="color: #5D728A;">${totalCost.toLocaleString()}</td>
-                        <td class="p-3 text-slate-600 text-xs">${o.note || '-'}</td>
+                        <td class="p-3 text-slate-600 text-xs">
+                            ${isChecked ? '<span class="text-[#4A7C59] font-semibold mr-1">✓已點收</span>' : ''}${cleanNote || (isChecked ? '' : '-')}
+                        </td>
                         <td class="p-3 text-right">
                             <select onchange="updateOrderField(${o.id}, 'status', this.value); renderArrived();" class="text-xs border border-[#E2DBD0] rounded px-2 py-1 focus:outline-none bg-[#EAF5EF] text-[#4A7C59] font-semibold">
                                 <option value="已回台" selected>已回台</option>
@@ -719,7 +766,52 @@
             });
         }
 
-        // 韓國工作室庫存管理：自動依據訂單計算（工作室數量增加，已回台數量扣除）
+        function moveOneToArrived(booth, item, color, size) {
+            const target = orders.find(o => 
+                o.status === '工作室' &&
+                String(o.booth).toLowerCase() === booth.toLowerCase() &&
+                String(o.item).toLowerCase() === item.toLowerCase() &&
+                String(o.color).toLowerCase() === color.toLowerCase() &&
+                String(o.size).toLowerCase() === size.toLowerCase()
+            );
+
+            if (!target) return;
+
+            if (target.qty > 1) {
+                target.qty -= 1;
+            } else {
+                orders = orders.filter(o => o.id !== target.id);
+            }
+
+            const existingArrived = orders.find(o => 
+                o.status === '已回台' &&
+                String(o.booth).toLowerCase() === booth.toLowerCase() &&
+                String(o.item).toLowerCase() === item.toLowerCase() &&
+                String(o.color).toLowerCase() === color.toLowerCase() &&
+                String(o.size).toLowerCase() === size.toLowerCase()
+            );
+
+            if (existingArrived) {
+                existingArrived.qty += 1;
+            } else {
+                orders.unshift({
+                    id: Date.now() + Math.random(),
+                    date: target.date,
+                    booth: target.booth,
+                    item: target.item,
+                    color: target.color,
+                    size: target.size,
+                    qty: 1,
+                    price: target.price,
+                    status: '已回台',
+                    note: target.note
+                });
+            }
+
+            syncToCloud();
+            renderInventory();
+        }
+
         function renderInventory() {
             const tbody = document.getElementById('inventoryTableBody');
             tbody.innerHTML = '';
@@ -727,9 +819,9 @@
             let invMap = {};
 
             orders.forEach(o => {
-                if (o.status !== '工作室' && o.status !== '已回台') return;
+                if (o.status !== '工作室') return;
 
-                const key = `${o.booth.toLowerCase()}_${o.item.toLowerCase()}_${o.color.toLowerCase()}_${o.size.toLowerCase()}`;
+                const key = `${String(o.booth).toLowerCase()}_${String(o.item).toLowerCase()}_${String(o.color).toLowerCase()}_${String(o.size).toLowerCase()}`;
                 if (!invMap[key]) {
                     invMap[key] = {
                         booth: o.booth,
@@ -739,31 +831,83 @@
                         qty: 0
                     };
                 }
-
-                if (o.status === '工作室') {
-                    invMap[key].qty += o.qty;
-                } else if (o.status === '已回台') {
-                    invMap[key].qty -= o.qty;
-                }
+                invMap[key].qty += o.qty;
             });
 
             let invList = Object.values(invMap).filter(i => i.qty > 0);
-
             document.getElementById('totalInvCount').innerText = `共 ${invList.reduce((sum, i) => sum + i.qty, 0)} 件現貨`;
 
             if (invList.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">目前韓國工作室沒有剩餘現貨庫存</td></tr>`;
-                return;
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">目前沒有狀態為「工作室」的現貨商品</td></tr>`;
+            } else {
+                invList.forEach(i => {
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-[#F9F7F2] transition">
+                            <td class="p-3 font-medium text-slate-900">${i.booth}</td>
+                            <td class="p-3 text-slate-800 font-medium">${i.item}</td>
+                            <td class="p-3 text-slate-600">${i.color}</td>
+                            <td class="p-3 text-slate-600">${i.size}</td>
+                            <td class="p-3 font-bold text-base" style="color: #5D728A;">${i.qty} 件</td>
+                            <td class="p-3 text-right">
+                                <button onclick="moveOneToArrived('${i.booth.replace(/'/g, "\\'")}', '${i.item.replace(/'/g, "\\'")}', '${i.color.replace(/'/g, "\\'")}', '${i.size.replace(/'/g, "\\'")}')" class="bg-[#EAF5EF] hover:bg-[#D5EBE0] text-[#4A7C59] px-3 py-1 rounded-lg text-xs font-semibold transition">
+                                    ✈️ 回台 -1
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
             }
 
-            invList.forEach(i => {
+            renderManualInventory();
+        }
+
+        function addManualInventory(e) {
+            e.preventDefault();
+            inventory.unshift({
+                id: Date.now(),
+                name: document.getElementById('invName').value,
+                qty: parseInt(document.getElementById('invQty').value) || 0
+            });
+            saveAndRenderManualInventory();
+            document.getElementById('inventoryForm').reset();
+        }
+
+        function adjustManualQty(id, amount) {
+            const item = inventory.find(i => i.id === id);
+            if (item) {
+                item.qty = Math.max(0, item.qty + amount);
+                saveAndRenderManualInventory();
+            }
+        }
+
+        function deleteManualInventory(id) {
+            inventory = inventory.filter(i => i.id !== id);
+            saveAndRenderManualInventory();
+        }
+
+        function saveAndRenderManualInventory() {
+            localStorage.setItem('shop_inventory', JSON.stringify(inventory));
+            renderManualInventory();
+        }
+
+        function renderManualInventory() {
+            const tbody = document.getElementById('manualInventoryBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            if (inventory.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 text-xs">無額外手動庫存記錄</td></tr>`;
+                return;
+            }
+            inventory.forEach(i => {
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 font-medium text-slate-900">${i.booth}</td>
-                        <td class="p-3 text-slate-800 font-medium">${i.item}</td>
-                        <td class="p-3 text-slate-600">${i.color}</td>
-                        <td class="p-3 text-slate-600">${i.size}</td>
-                        <td class="p-3 font-bold text-base" style="color: #5D728A;">${i.qty} 件</td>
+                        <td class="p-3 font-medium text-slate-900">${i.name}</td>
+                        <td class="p-3 text-slate-800 font-bold">${i.qty} 件</td>
+                        <td class="p-3 text-right space-x-1">
+                            <button onclick="adjustManualQty(${i.id}, -1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">-1</button>
+                            <button onclick="adjustManualQty(${i.id}, 1)" class="bg-[#EFECE6] hover:bg-[#E2DBD0] px-2 py-1 rounded text-xs font-bold">+1</button>
+                        </td>
+                        <td class="p-3 text-right"><button onclick="deleteManualInventory(${i.id})" class="text-red-400 hover:text-red-600 text-xs font-medium">刪除</button></td>
                     </tr>
                 `;
             });
