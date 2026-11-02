@@ -353,7 +353,54 @@
     <!-- JavaScript 完整邏輯 -->
     <script>
         const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxB-ralOHHJNwyRGx9CZ0plqjAzPFxC8VLm_e6B0mRfRPy26tSoOu5KPXTO-P1eNtU/exec";
-        let orders = JSON.parse(localStorage.getItem('shop_orders')) || [];
+        
+        // 直接內建您提供的最新完整表單資料作為預設基礎，確保品項與數量 100% 不會漏掉
+        let defaultOrders = [
+            { id: 1793432326477, date: "2026-10-31", booth: "Choco", item: "柔軟圓領上衣", color: "白", size: "-", qty: 1, price: 0, status: "待訂", note: "" },
+            { id: 1793432284699, date: "2026-11-02", booth: "earlobe", item: "格紋綁帶大腸圈", color: "卡其", size: "-", qty: 1, price: 0, status: "待訂", note: "" },
+            { id: 1793432018960, date: "2026-10-31", booth: "london bagel", item: "狗狗袋 (S)", color: "-", size: "-", qty: 2, price: 0, status: "工作室", note: "" },
+            { id: 1793431486313, date: "2026-10-31", booth: "pigthree", item: "274 新款", color: "-", size: "M", qty: 1, price: 26000, status: "工作室", note: "" },
+            { id: 1793431471133, date: "2026-10-31", booth: "pigthree", item: "277 新款", color: "-", size: "M", qty: 1, price: 27000, status: "工作室", note: "" },
+            { id: 1793431448400, date: "2026-10-31", booth: "pigthree", item: "250簡約輕薄直筒褲", color: "炭灰", size: "M", qty: 1, price: 23000, status: "工作室", note: "" },
+            { id: 1793431392455, date: "2026-10-31", booth: "billow", item: "歐膩的時髦簡約麂皮外套", color: "咖", size: "-", qty: 1, price: 67000, status: "工作室", note: "" },
+            { id: 1793431360710, date: "2026-10-31", booth: "billow", item: "半拉鍊羊毛針織", color: "灰", size: "-", qty: 1, price: 32000, status: "工作室", note: "" },
+            { id: 1793431338074, date: "2026-10-31", booth: "billow", item: "半拉鍊羊毛針織", color: "咖", size: "-", qty: 2, price: 32000, status: "工作室", note: "" },
+            { id: 1793431303989, date: "2026-10-30", booth: "billow", item: "歐膩的簡約皮外套", color: "黑", size: "-", qty: 1, price: 66000, status: "工作室", note: "" },
+            { id: 1793431303988, date: "2026-10-30", booth: "billow", item: "歐膩的簡約皮外套", color: "深咖", size: "-", qty: 1, price: 66000, status: "工作室", note: "" },
+            { id: 1793431268470, date: "2026-10-30", booth: "pomelo", item: "細條紋舒適棉tee", color: "酒紅", size: "-", qty: 1, price: 17000, status: "已訂", note: "" },
+            { id: 1793431268469, date: "2026-10-30", booth: "pomelo", item: "細條紋舒適棉tee", color: "灰", size: "-", qty: 1, price: 17000, status: "工作室", note: "" },
+            { id: 1793431231096, date: "2026-10-30", booth: "pomelo", item: "緞面蕾絲小可愛", color: "咖", size: "-", qty: 2, price: 25000, status: "工作室", note: "" },
+            { id: 1793431182050, date: "2026-10-28", booth: "liter", item: "秋季格子襯衫", color: "咖", size: "-", qty: 2, price: 39000, status: "工作室", note: "" },
+            { id: 1793431145874, date: "2026-10-28", booth: "liter", item: "大V領薄針織", color: "條紋", size: "-", qty: 2, price: 31000, status: "已訂", note: "跟他確認是不是訂錯" },
+            { id: 1793431064892, date: "2026-10-28", booth: "liter", item: "厚實暖暖毛衣", color: "-", size: "-", qty: 2, price: 56000, status: "已訂", note: "一件已到" },
+            { id: 1793431018468, date: "2026-10-28", booth: "liter", item: "蕾絲軟棉背心", color: "白", size: "-", qty: 1, price: 18000, status: "已訂", note: "" },
+            { id: 1793430978316, date: "2026-10-29", booth: "allover", item: "巴黎雙口袋水洗襯衫", color: "-", size: "-", qty: 2, price: 25000, status: "已訂", note: "" },
+            { id: 1793430948061, date: "2026-10-29", booth: "allover", item: "Romance check blouse", color: "橄欖綠", size: "-", qty: 1, price: 24000, status: "工作室", note: "" },
+            { id: 1793430948060, date: "2026-10-29", booth: "allover", item: "Romance check blouse", color: "深藍", size: "-", qty: 1, price: 24000, status: "工作室", note: "" },
+            { id: 1793430884953, date: "2026-10-28", booth: "ouir", item: "天絲軟綿綿tee", color: "淺藍", size: "-", qty: 1, price: 20000, status: "已訂", note: "" },
+            { id: 1793430884952, date: "2026-10-28", booth: "ouir", item: "天絲軟綿綿tee", color: "深灰", size: "-", qty: 1, price: 20000, status: "工作室", note: "" },
+            { id: 1793430817132, date: "2026-10-28", booth: "ouir", item: "寶寶藍針織條紋polo", color: "-", size: "-", qty: 2, price: 15000, status: "工作室", note: "" },
+            { id: 1793430775481, date: "2026-10-27", booth: "mellow", item: "(真皮🐮) 經典百搭短靴", color: "-", size: "25.5", qty: 1, price: 40000, status: "工作室", note: "" },
+            { id: 1793430639888, date: "2026-10-26", booth: "MARIE", item: "(真皮🐑) 軟Q舒適麂皮法式娃娃鞋", color: "深咖", size: "24.5", qty: 1, price: 33000, status: "工作室", note: "" },
+            { id: 1793430515887, date: "2026-10-26", booth: "bucks", item: "細肩垂領包 S", color: "麂皮-灰棕", size: "-", qty: 1, price: 98000, status: "已訂", note: "" },
+            { id: 1793430515886, date: "2026-10-26", booth: "bucks", item: "細肩垂領包 S", color: "牛皮-深咖", size: "-", qty: 1, price: 108000, status: "已訂", note: "" },
+            { id: 1793430310655, date: "2026-10-28", booth: "fever", item: "小磨毛玩具總動員漫畫tee", color: "白", size: "-", qty: 1, price: 19000, status: "已訂", note: "" },
+            { id: 1793430310654, date: "2026-10-28", booth: "fever", item: "小磨毛玩具總動員漫畫tee", color: "深藍", size: "-", qty: 2, price: 19000, status: "已訂", note: "" },
+            { id: 1793430251909, date: "2026-10-31", booth: "Choco", item: "坑條圓領tee", color: "白", size: "-", qty: 1, price: 8000, status: "工作室", note: "" },
+            { id: 1793430222730, date: "2026-10-28", booth: "Choco", item: "柔軟圓領上衣", color: "燕麥", size: "-", qty: 2, price: 9000, status: "工作室", note: "" },
+            { id: 1793422735718, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "燕麥", size: "-", qty: 3, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735717, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "米白", size: "-", qty: 9, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735716, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "米灰", size: "-", qty: 10, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735715, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "摩卡", size: "-", qty: 12, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735714, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "白", size: "-", qty: 13, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735713, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "咖啡", size: "-", qty: 15, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735712, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "灰藍", size: "-", qty: 17, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735711, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "黑", size: "-", qty: 19, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735710, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "深灰", size: "-", qty: 19, price: 1200, status: "待訂", note: "" },
+            { id: 1793422735709, date: "2026-10-31", booth: "🧦", item: "good day socks", color: "淺灰", size: "-", qty: 20, price: 1200, status: "待訂", note: "" }
+        ];
+
+        let orders = JSON.parse(localStorage.getItem('shop_orders')) || defaultOrders;
         let inventory = JSON.parse(localStorage.getItem('shop_inventory')) || [];
         let parcels = JSON.parse(localStorage.getItem('shop_parcels')) || [];
         let isSortedByStatus = false;
@@ -700,7 +747,7 @@
 
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
+                        <td class="p-3 text-slate-600 text-xs font-semibold">${o.date || '-'}</td>
                         <td class="p-2"><input type="text" value="${o.booth}" oninput="updateOrderField(${o.id}, 'booth', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-900 w-28 focus:outline-none"></td>
                         <td class="p-2"><input type="text" value="${o.item}" oninput="updateOrderField(${o.id}, 'item', this.value)" class="milk-input border rounded px-2 py-1 text-xs font-medium text-slate-800 w-32 focus:outline-none"></td>
                         <td class="p-2"><input type="text" value="${o.color}" oninput="updateOrderField(${o.id}, 'color', this.value)" class="milk-input border rounded px-2 py-1 text-xs text-slate-700 w-20 focus:outline-none"></td>
@@ -737,7 +784,7 @@
                 const totalCost = o.qty * o.price;
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
+                        <td class="p-3 text-slate-600 text-xs">${o.date || '-'}</td>
                         <td class="p-3 font-medium text-slate-900">${o.booth}</td>
                         <td class="p-3 text-slate-800 font-medium">${o.item}</td>
                         <td class="p-3 text-slate-600">${o.color}</td>
@@ -771,7 +818,7 @@
                 const totalCost = o.qty * o.price;
                 tbody.innerHTML += `
                     <tr class="hover:bg-[#F9F7F2] transition">
-                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
+                        <td class="p-3 text-slate-600 text-xs">${o.date || '-'}</td>
                         <td class="p-3 font-medium text-slate-900">${o.booth}</td>
                         <td class="p-3 text-slate-800 font-medium">${o.item}</td>
                         <td class="p-3 text-slate-600">${o.color}</td>
@@ -815,7 +862,7 @@
                         <td class="p-3 text-center">
                             <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleArrivedCheck(${o.id}, this.checked)" class="w-4 h-4 accent-[#4A7C59] rounded cursor-pointer">
                         </td>
-                        <td class="p-3 text-slate-600 text-xs">${o.date}</td>
+                        <td class="p-3 text-slate-600 text-xs">${o.date || '-'}</td>
                         <td class="p-3 font-medium ${isChecked ? 'line-through text-slate-400' : 'text-slate-900'}">${o.booth}</td>
                         <td class="p-3 font-medium ${isChecked ? 'line-through text-slate-400' : 'text-slate-800'}">${o.item}</td>
                         <td class="p-3 text-slate-600">${o.color}</td>
